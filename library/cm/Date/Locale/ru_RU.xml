@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+	<section name="month">
+		<scope mode="abbreviated">
+			<item value="1">янв.</item>
+			<item value="2">февр.</item>
+			<item value="3">марта</item>
+			<item value="4">апр.</item>
+			<item value="5">мая</item>
+			<item value="6">июня</item>
+			<item value="7">июля</item>
+			<item value="8">авг.</item>
+			<item value="9">сент.</item>
+			<item value="10">окт.</item>
+			<item value="11">нояб.</item>
+			<item value="12">дек.</item>
+		</scope>
+		<scope mode="wide">
+			<item value="1">января</item>
+			<item value="2">февраля</item>
+			<item value="3">марта</item>
+			<item value="4">апреля</item>
+			<item value="5">мая</item>
+			<item value="6">июня</item>
+			<item value="7">июля</item>
+			<item value="8">августа</item>
+			<item value="9">сентября</item>
+			<item value="10">октября</item>
+			<item value="11">ноября</item>
+			<item value="12">декабря</item>
+		</scope>
+		<scope mode="common">
+			<item value="1">январь</item>
+			<item value="2">февраль</item>
+			<item value="3">март</item>
+			<item value="4">апрель</item>
+			<item value="5">май</item>
+			<item value="6">июнь</item>
+			<item value="7">июль</item>
+			<item value="8">август</item>
+			<item value="9">сентябрь</item>
+			<item value="10">октябрь</item>
+			<item value="11">ноябрь</item>
+			<item value="12">декабрь</item>
+		</scope>
+	</section>
+</root>

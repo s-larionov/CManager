@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+	<section name="month">
+		<scope mode="abbreviated">
+			<item value="1">gen.</item>
+			<item value="2">feb.</item>
+			<item value="3">mar.</item>
+			<item value="4">abr.</item>
+			<item value="5">may.</item>
+			<item value="6">jun.</item>
+			<item value="7">jul.</item>
+			<item value="8">ag.</item>
+			<item value="9">set.</item>
+			<item value="10">oct.</item>
+			<item value="11">nov.</item>
+			<item value="12">des.</item>
+		</scope>
+		<scope mode="wide">
+			<item value="1">enero</item>
+			<item value="2">febrero</item>
+			<item value="3">marzo</item>
+			<item value="4">abril</item>
+			<item value="5">mayo</item>
+			<item value="6">junio</item>
+			<item value="7">julio</item>
+			<item value="8">agosto</item>
+			<item value="9">septiembre</item>
+			<item value="10">octubre</item>
+			<item value="11">noviembre</item>
+			<item value="12">diciembre</item>
+		</scope>
+		<scope mode="common">
+			<item value="1">enero</item>
+			<item value="2">febrero</item>
+			<item value="3">marzo</item>
+			<item value="4">abril</item>
+			<item value="5">mayo</item>
+			<item value="6">junio</item>
+			<item value="7">julio</item>
+			<item value="8">agosto</item>
+			<item value="9">septiembre</item>
+			<item value="10">octubre</item>
+			<item value="11">noviembre</item>
+			<item value="12">diciembre</item>
+		</scope>
+	</section>
+</root>

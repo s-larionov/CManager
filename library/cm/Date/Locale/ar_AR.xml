@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+	<section name="month">
+		<scope mode="abbreviated">
+			<item value="1">يناير</item>
+			<item value="2">فبراير</item>
+			<item value="3">مارس</item>
+			<item value="4">أبريل</item>
+			<item value="5">مايو</item>
+			<item value="6">يونيو</item>
+			<item value="7">يوليو</item>
+			<item value="8">أغسطس</item>
+			<item value="9">سبتمبر</item>
+			<item value="10">أكتوبر</item>
+			<item value="11">نوفمبر</item>
+			<item value="12">ديسمبر</item>
+		</scope>
+		<scope mode="wide">
+			<item value="1">يناير</item>
+			<item value="2">فبراير</item>
+			<item value="3">مارس</item>
+			<item value="4">أبريل</item>
+			<item value="5">مايو</item>
+			<item value="6">يونيو</item>
+			<item value="7">يوليو</item>
+			<item value="8">أغسطس</item>
+			<item value="9">سبتمبر</item>
+			<item value="10">أكتوبر</item>
+			<item value="11">نوفمبر</item>
+			<item value="12">ديسمبر</item>
+		</scope>
+		<scope mode="common">
+			<item value="1">يناير</item>
+			<item value="2">فبراير</item>
+			<item value="3">مارس</item>
+			<item value="4">أبريل</item>
+			<item value="5">مايو</item>
+			<item value="6">يونيو</item>
+			<item value="7">يوليو</item>
+			<item value="8">أغسطس</item>
+			<item value="9">سبتمبر</item>
+			<item value="10">أكتوبر</item>
+			<item value="11">نوفمبر</item>
+			<item value="12">ديسمبر</item>
+		</scope>
+	</section>
+</root>
