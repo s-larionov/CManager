@@ -242,7 +242,7 @@ class cm_Controller_Router_XML_Section {
 	/**
 	 * @return array|string
 	 */
-	public function asArray() {
+	public function toArray() {
 		return $this->_data;
 	}
 }

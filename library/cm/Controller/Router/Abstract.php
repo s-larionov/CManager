@@ -15,7 +15,7 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	/**
 	 * @var cm_Controller_Route[]
 	 */
-	protected $_routes = array();
+	protected $_routes = null;
 
 	/**
 	 * Объект-парсер структуры. С его помошью ищем нужную страницу. Реализация паттерна Strategy.
@@ -25,7 +25,7 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	protected $_pageResolver;
 
 	/**
-	 * @var string[]
+	 * @var array
 	 */
 	protected $_structure = null;
 
@@ -73,10 +73,33 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	abstract protected function _getStructure();
 
 	/**
+	 * @return array
+	 */
+	final public function getStructure() {
+		if ($this->_structure === null) {
+			$this->_structure = $this->_getStructure();
+		}
+		return $this->_structure;
+	}
+
+	/**
+	 * @param array $structure
+	 * @return cm_Controller_Router_Abstract
+	 */
+	final public function setStructure(array $structure) {
+		$this->_structure = $structure;
+		return $this;
+	}
+
+	/**
 	 * @param cm_Controller_Page $page
 	 */
 	final public function setPage(cm_Controller_Page $page) {
 		$this->_page = $page;
+	}
+
+	final public function __sleep() {
+		return array('_structure');
 	}
 
 	/**
@@ -116,11 +139,78 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	 * @return cm_Controller_Route[]
 	 */
 	public function getRoutes() {
-		$structure = $this->_getStructure();
-		// TODO
+		if ($this->_routes === null) {
+			$structure = $this->_getStructure();
+			if (!isset($structure['page'])) {
+				throw new cm_Controller_Router_Exception("Wrong router config data");
+			}
 
+			var_dump($structure);
 
-		return array();
+			$this->_routes = $this->_generateRoutes($structure);
+		}
+		var_dump($this->_routes);
+		return $this->_routes;
+	}
+
+	/**
+	 * @param array $structure
+	 * @return array
+	 */
+	protected function _generateRoutes(array $structure, cm_Controller_Route $parentRoute = null) {
+		if (!is_array($structure['page']) || !array_key_exists(0, $structure['page'])) {
+			$structure['page'] = array($structure['page']);
+		}
+		$routes = array();
+		foreach($structure['page'] as $pageConfig) {
+			if (!isset($pageConfig['name'])) {
+				throw new cm_Controller_Router_Exception("Attribute @name is required for page configuration");
+			}
+			$routes[$pageConfig['name']] = $this->_createRoute($pageConfig, $parentRoute);
+			if (isset($pageConfig['page'])) {
+				$routes = array_merge($routes, $this->_generateRoutes($pageConfig, $routes[$pageConfig['name']]));
+			}
+		}
+
+		return $routes;
+	}
+
+	/**
+	 * @param array $pageConfig
+	 * @param cm_Controller_Route $parentRoute
+	 * @return cm_Controller_Route
+	 */
+	protected function _createRoute(array $pageConfig, cm_Controller_Route $parentRoute = null) {
+		if (!isset($pageConfig['route'])) {
+			throw new cm_Controller_Router_Exception("Parameter route required");
+		}
+		if (!is_array($pageConfig['route']) || !isset($pageConfig['route']['url'])) {
+			throw new cm_Controller_Router_Exception("Parameter route must have attribute @url");
+		}
+		$route = $pageConfig['route']['url'];
+
+		if (isset($pageConfig['route']['var'])) {
+			$vars = $pageConfig['route']['var'];
+			if (!is_array($vars)) {
+				$vars = array($vars);
+			}
+		} else {
+			$vars = array();
+		}
+
+		$config = array();
+		foreach($config as $param => $value) {
+			if ($param == 'page' || $param == 'route') {
+				continue;
+			}
+			$config[$param] = $value;
+		}
+
+		$route = new cm_Controller_Route($route, $vars, $config);
+		if ($parentRoute !== null) {
+			$route->setParent($parentRoute);
+		}
+		return $route;
 	}
 
 	/**

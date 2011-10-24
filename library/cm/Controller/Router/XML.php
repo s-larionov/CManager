@@ -16,13 +16,15 @@ class cm_Controller_Router_XML extends cm_Controller_Router_Abstract {
 		parent::__construct($request, $response);
 	}
 
+	/**
+	 * @return array
+	 * @throws cm_Controller_Router_Exception
+	 */
 	protected function _getStructure() {
-		if ($this->_structure === null) {
-			if (!file_exists($this->_xmlFile)) {
-				throw new cm_Controller_Router_Exception("File '{$this->_xmlFile}' not found");
-			}
-			$structure = new cm_Controller_Router_XML_Section($this->_xmlFile);
+		if (!file_exists($this->_xmlFile)) {
+			throw new cm_Controller_Router_Exception("File '{$this->_xmlFile}' not found");
 		}
-		return $this->_structure;
+		$structure = new cm_Controller_Router_XML_Section($this->_xmlFile);
+		return $structure->toArray();
 	}
 }
