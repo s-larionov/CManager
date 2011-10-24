@@ -22,26 +22,26 @@ class cm_Controller_Route {
 	protected $_parent = null;
 
 	/**
+	 * @var cm_Controller_Router_Abstract
+	 */
+	protected $_router = null;
+
+	/**
 	 * @param string $route
 	 * @param array $varsRules
-	 * @param array $pageConfig
 	 */
-	public function __construct($route, $varsRules = array(), $pageConfig = array()) {
+	public function __construct($route, array $varsRules = array()) {
 		if (!is_array($varsRules)) {
 			throw new cm_Controller_Route_Exception('Route config must be array');
 		}
-		if (!is_array($pageConfig)) {
-			throw new cm_Controller_Route_Exception('Page config must be array');
-		}
-
 		$this->_route = (string) $route;
+
 		foreach($varsRules as $var) {
-			if (!isset($var['name']) || isset($var['rule'])) {
+			if (!isset($var['name']) || !isset($var['rule'])) {
 				throw new cm_Controller_Route_Exception('Attributes @name and @rule are required');
 			}
 			$this->_vars[] = $var;
 		}
-		$this->_pageConfig = $pageConfig;
 	}
 
 	/**
@@ -72,7 +72,7 @@ class cm_Controller_Route {
 	 * @param bool $quoteQueryParams
 	 * @return string
 	 */
-	public function generateUrl($vars = array(), $quoteQueryParams = true) {
+	public function generateUrl(array $vars = array(), $quoteQueryParams = true) {
 		if (!is_array($vars)) {
 			throw new cm_Controller_Route_Exception('First argument must be array of strings');
 		}
@@ -192,5 +192,36 @@ class cm_Controller_Route {
 			return $this->_pageConfig[(string) $param];
 		}
 		return null;
+	}
+
+	/**
+	 * @param array  $config
+	 * @return cm_Controller_Route
+	 */
+	public function setPageConfig(array $config) {
+		$this->_pageConfig = $config;
+		return $this;
+	}
+
+	/**
+	 * @return cm_Controller_Router_Abstract
+	 */
+	public function getRouter() {
+		if ($this->_router === null) {
+			$this->_router = cm_Registry::getFrontController()->getRouter();
+		}
+		return $this->_router;
+	}
+
+	/**
+	 * @param array $variables
+	 * @return cm_Controller_Page
+	 */
+	public function createPage(array $variables = array()) {
+		$page = new cm_Controller_Page($this->getPageConfig(), $this->getRouter()->getRequest(), $this->getRouter()->getResponse());
+		$page->setRoute($this)
+			->setVars($variables)
+			->setCode(200);
+		return $page;
 	}
 }

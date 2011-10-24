@@ -58,9 +58,9 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	 * @return string
 	 * @throws cm_Controller_Route_Exception
 	 */
-	public function generateUrl($pageName, $variables = array()) {
+	public function generateUrl($pageName, array $variables = array()) {
 		if (!isset($this->_routes[$pageName])) {
-			throw new cm_Controller_Route_Exception("Page {$pageName} doesn't exists in routes config");
+			return "#{$pageName}#?" . implode('&amp;', $variables);
 		}
 		return $this->_routes[$pageName]->generateUrl($variables);
 	}
@@ -99,19 +99,18 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	}
 
 	final public function __sleep() {
-		return array('_structure');
+		return array('_routes', '_structure');
 	}
 
 	/**
 	 * @abstract
-	 * @param array $config
+	 * @param string $pageName
 	 * @return cm_Controller_Page
 	 */
-	public function createPage($config = null) {
-		if ($config !== null) {
-			$page = new cm_Controller_Page($config, $this->getRequest(), $this->getResponse());
-			$page->setCode(200);
-			return $page;
+	public function createPage($pageName) {
+		$routes = $this->getRoutes();
+		if (isset($routes[$pageName])) {
+			return $routes[$pageName]->createPage();
 		}
 		return $this->createPageByCode(404);
 	}
@@ -145,16 +144,14 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 				throw new cm_Controller_Router_Exception("Wrong router config data");
 			}
 
-			var_dump($structure);
-
 			$this->_routes = $this->_generateRoutes($structure);
 		}
-		var_dump($this->_routes);
 		return $this->_routes;
 	}
 
 	/**
 	 * @param array $structure
+	 * @param cm_Controller_Route $parentRoute
 	 * @return array
 	 */
 	protected function _generateRoutes(array $structure, cm_Controller_Route $parentRoute = null) {
@@ -191,11 +188,17 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 
 		if (isset($pageConfig['route']['var'])) {
 			$vars = $pageConfig['route']['var'];
-			if (!is_array($vars)) {
+			if (!is_array($vars) || !array_key_exists(0, $vars)) {
 				$vars = array($vars);
 			}
 		} else {
 			$vars = array();
+		}
+
+
+		$route = new cm_Controller_Route($route, $vars);
+		if ($parentRoute !== null) {
+			$route->setParent($parentRoute);
 		}
 
 		$config = array();
@@ -205,11 +208,8 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 			}
 			$config[$param] = $value;
 		}
+		$route->setPageConfig($config);
 
-		$route = new cm_Controller_Route($route, $vars, $config);
-		if ($parentRoute !== null) {
-			$route->setParent($parentRoute);
-		}
 		return $route;
 	}
 
@@ -223,7 +223,7 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	}
 
 	/**
-	 * @return cm_Controller_Router_XML_PageResolver_Abstract
+	 * @return cm_Controller_PageResolver
 	 */
 	public function getPageResolver() {
 		if ($this->_pageResolver === null) {

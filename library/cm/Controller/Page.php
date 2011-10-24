@@ -43,9 +43,19 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	protected $_sessionTagsStorage = array();
 
 	/**
+	 * @var array
+	 */
+	protected $_variables = array();
+
+	/**
+	 * @var cm_Controller_Route
+	 */
+	protected $_route = null;
+
+	/**
 	 * @param array $config
-	 * @param cm_Controller_Request_HTTP $request
-	 * @param cm_Controller_Response_HTTP $response
+	 * @param cm_Controller_Request_Abstract|cm_Controller_Request_HTTP $request
+	 * @param cm_Controller_Response_Abstract|cm_Controller_Response_HTTP $response
 	 */
 	public function __construct(array $config, $request, $response) {
 		parent::__construct($request, $response);
@@ -90,12 +100,13 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	 *
 	 * @param cm_Controller_Tag $tag
 	 * @param string $path
-	 * @return void
+	 * @return cm_Controller_Page
 	 */
 	final public function addSessionTag(cm_Controller_Tag $tag, $path = null) {
 		$key = 'tag_'. $tag->name;
 		$this->sessionTagsStorage($path)->{$key} = $tag->toArray();
 		$this->sessionTagsStorage($path)->setExpirationHops(1, $key);
+		return $this;
 	}
 
 	/**
@@ -143,7 +154,7 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	 * @return void
 	 */
 	protected function _addTags() {
-
+		// TODO
 	}
 
 	/**
@@ -272,32 +283,13 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 		return '';
 	}
 
-//	/**
-//	 * @see: cm_Controller_Action_Abstract::checkExtraParams() и
-//	 * 		 cm_Controller_Router_Abstract::_construct()
-//	 *
-//	 * @return boolean
-//	 */
-//	public function validExtraPath() {
-//		$isValid = false;
-//		foreach ($this->getTags() as $tag) {
-//			$checkResult = $tag->checkExtraPath($this->getRequest(), $this->getResponse());
-//			if ($checkResult === true) {
-//				$isValid = true;
-//			} else if ($checkResult === false) {
-//				$tag->isDisabled(true);
-//			}
-//		}
-//		return $isValid;
-//	}
-
 	/**
 	 * Возвращает урл перенаправления, если его нет возвращает FALSE.
 	 *
 	 * @return string | boolean
 	 */
 	public function getRedirectUrl() {
-
+		// TODO
 	}
 
 	/**
@@ -323,10 +315,11 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 
 	/**
 	 * @param int $value
-	 * @return void
+	 * @return cm_Controller_Page
 	 */
 	final public function setCode($value) {
 		$this->_code = (int) $value;
+		return $this;
 	}
 
 	/**
@@ -348,9 +341,11 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 
 	/**
 	 * @param string $value
+	 * @return cm_Controller_Page
 	 */
 	final public function setLayout($value) {
 		$this->_layout = $value;
+		return $this;
 	}
 
 	/**
@@ -374,8 +369,57 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 
 	/**
 	 * @param string $value
+	 * @return cm_Controller_Page
 	 */
 	final public function setTitle($value) {
 		$this->_title = $value;
+		return $this;
+	}
+
+	/**
+	 * @param array $variables
+	 * @return cm_Controller_Page
+	 */
+	final public function setVars(array $variables) {
+		foreach($variables as $name => $variable) {
+			$this->setVar($name, $variable);
+		}
+		return $this;
+	}
+
+	/**
+	 * @param string $name
+	 * @param mixed $value
+	 * @return void
+	 */
+	final public function setVar($name, $value) {
+		$this->_variables[$name] = $value;
+	}
+
+	/**
+	 * @param string $name
+	 * @return mixed
+	 */
+	final public function getVar($name) {
+		if (array_key_exists($name, $this->_variables)) {
+			return $this->_variables[$name];
+		}
+		return null;
+	}
+
+	/**
+	 * @param cm_Controller_Route $route
+	 * @return cm_Controller_Page
+	 */
+	final public function setRoute(cm_Controller_Route $route) {
+		$this->_route = $route;
+		return $this;
+	}
+
+	/**
+	 * @return cm_Controller_Route
+	 */
+	final public function getRoute() {
+		return $this->_route;
 	}
 }

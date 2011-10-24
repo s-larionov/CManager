@@ -22,15 +22,18 @@ class cm_Controller_PageResolver {
 		return $this->_router;
 	}
 
-	/**
-	 * @return cm_Controller_Route[]
-	 */
-	public final function getRoutes() {
-		return $this->getRouter()->getRoutes();
-	}
-
 	public function getPage() {
-		$this->getRouter()->getRoutes();
-		// @todo
+		$routes	= $this->getRouter()->getRoutes();
+		$request= $this->getRouter()->getRequest();
+
+		$path = $request->getPath();
+		foreach($routes as $pageName => $route) {
+			$variables = $route->parse($path);
+			if ($variables !== false) {
+				return $route->createPage($variables);
+			}
+		}
+
+		return $this->getRouter()->createPageByCode(404);
 	}
 }

@@ -46,26 +46,6 @@ class cm_Controller_Request_HTTP extends cm_Controller_Request_Abstract {
 	protected $_referer;
 
 	/**
-	 * Остаток физически не существующего пути (не заведенного в системе). Значение этого
-	 * свойства должен устанавливать роутер.
-	 * @todo: Теоретически должно работать так (еще не реализовано):
-	 *   Если этот остаток существует, система должна проверить к какому модулю этот
-	 *   остаток относится. Если такого модуля на текущем урле ($_realPath) не нашлось
-	 *   сервер должен отдать заголовок с ошибкой 404.
-	 * @see cm_Controller_Front
-	 * @see cm_Controller_Router_Abstract
-	 * @var string
-	 */
-	protected $_extraPath;
-
-	/**
-	 * Путь, который не включает в себя $_extraPath, $_requestTag и строку запроса.
-	 * @see cm_Controller_Router_Abstract
-	 * @var string
-	 */
-	protected $_realPath;
-
-	/**
 	 *	Используется для вызова конкретного тэга текущего урла, без использования
 	 *	разметки т.п. вещей. Т.е. результатом работы приложения будет вызов этого тэга.
 	 *	
@@ -260,48 +240,6 @@ class cm_Controller_Request_HTTP extends cm_Controller_Request_Abstract {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getRealPath() {
-		if (empty($this->_realPath)) {
-			if (count($this->getExtraPath())) {
-				$xtrapath = implode('/', $this->getExtraPath());
-				$path = trim($this->getPath(), '/');
-				$pos = strpos($path, $xtrapath);
-				$rpath = substr($path, 0, $pos - 1);
-
-				$this->_realPath = !$rpath? '/': '/'. $rpath .'/';
-			} else {
-				$this->_realPath = $this->getPath();
-			}
-		}
-		return $this->_realPath;
-	}
-
-	/**
-	 * @param string
-	 * @return void
-	 */
-	public function setExtraPath($path) {
-		// @todo: выполняем провеки
-		$this->_extraPath = $path;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getExtraPath() {
-		return $this->_extraPath;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function hasExtraPath() {
-		return !empty($this->_extraPath);
-	}
-
-	/**
 	 * Access values contained in the superglobals as public members
 	 * Order of precedence: 1. GET, 2. POST, 3. COOKIE, 4. SERVER, 5. ENV
 	 *
@@ -311,8 +249,6 @@ class cm_Controller_Request_HTTP extends cm_Controller_Request_Abstract {
 	 */
 	public function __get($key) {
 		switch (true) {
-			/*case isset($this->_params[$key]):
-				return $this->_params[$key];*/
 			case isset($_GET[$key]):
 				return $_GET[$key];
 			case isset($_POST[$key]):
@@ -321,8 +257,6 @@ class cm_Controller_Request_HTTP extends cm_Controller_Request_Abstract {
 				return $_COOKIE[$key];
 			case ($key == 'REQUEST_URI'):
 				return $this->getRequestUri();
-/*			case ($key == 'PATH_INFO'):
-				return $this->getPathInfo();*/
 			case isset($_SERVER[$key]):
 				return $_SERVER[$key];
 			case isset($_ENV[$key]):
@@ -340,33 +274,6 @@ class cm_Controller_Request_HTTP extends cm_Controller_Request_Abstract {
 	 */
 	public function get($key) {
 		return $this->__get($key);
-	}
-
-	/**
-	 * Set values
-	 *
-	 * In order to follow {@link __get()}, which operates on a number of
-	 * superglobals, setting values through overloading is not allowed and will
-	 * raise an exception. Use setParam() instead.
-	 *
-	 * @param string $key
-	 * @param mixed $value
-	 * @return void
-	 * @throws cm_Controller_Request_Exception
-	 */
-	public function __set($key, $value) {
-		throw new cm_Controller_Request_Exception('Setting values in superglobals not allowed; please use setParam()');
-	}
-
-	/**
-	 * Alias to __set()
-	 *
-	 * @param string $key
-	 * @param mixed $value
-	 * @return void
-	 */
-	public function set($key, $value) {
-		$this->__set($key, $value);
 	}
 
 	/**
@@ -499,7 +406,7 @@ class cm_Controller_Request_HTTP extends cm_Controller_Request_Abstract {
 	 * @return boolean
 	 */
 	public function isPost() {
-		return ('POST' == $this->getMethod());
+		return ($this->getMethod() === 'POST');
 	}
 
 	/**
