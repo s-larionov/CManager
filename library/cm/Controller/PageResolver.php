@@ -30,6 +30,7 @@ class cm_Controller_PageResolver {
 	}
 
 	public function getPage() {
+		$this->getRouter()->getRoutes();
 		// @todo
 	}
 }

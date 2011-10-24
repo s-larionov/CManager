@@ -23,6 +23,12 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	 * @var cm_Controller_PageResolver
 	 */
 	protected $_pageResolver;
+
+	/**
+	 * @var string[]
+	 */
+	protected $_structure = null;
+
 	/**
 	 * @return void
 	 */
@@ -111,6 +117,9 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	 */
 	public function getRoutes() {
 		$structure = $this->_getStructure();
+		// TODO
+
+
 		return array();
 	}
 
