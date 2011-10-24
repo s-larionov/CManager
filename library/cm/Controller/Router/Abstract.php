@@ -22,7 +22,7 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	 *
 	 * @var cm_Controller_PageResolver
 	 */
-	protected $_pageResolver;
+	protected $_pageResolver = null;
 
 	/**
 	 * @var array
@@ -73,11 +73,18 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	abstract protected function _getStructure();
 
 	/**
-	 * @return array
+	 * @param string $section
+	 * @return array|string|null
 	 */
-	final public function getStructure() {
+	final public function getStructure($section = null) {
 		if ($this->_structure === null) {
 			$this->_structure = $this->_getStructure();
+		}
+		if ($section !== null) {
+			if (isset($this->_structure[$section])) {
+				return $this->_structure[$section];
+			}
+			return null;
 		}
 		return $this->_structure;
 	}
@@ -98,6 +105,9 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 		$this->_page = $page;
 	}
 
+	/**
+	 * @return array
+	 */
 	final public function __sleep() {
 		return array('_routes', '_structure');
 	}
@@ -105,12 +115,18 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	/**
 	 * @abstract
 	 * @param string $pageName
+	 * @param array $variables
 	 * @return cm_Controller_Page
 	 */
-	public function createPage($pageName) {
+	public function createPage($pageName, array $variables = array()) {
 		$routes = $this->getRoutes();
 		if (isset($routes[$pageName])) {
-			return $routes[$pageName]->createPage();
+			$code = (int) $routes[$pageName]->getPageConfig('error_code');
+			$page = new cm_Controller_Page($routes[$pageName]->getPageConfig(), $this->getRequest(), $this->getResponse());
+			$page->setRoute($routes[$pageName])
+				->setVars($variables)
+				->setCode($code? $code: 200);
+			return $page;
 		}
 		return $this->createPageByCode(404);
 	}
@@ -118,14 +134,13 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 	/**
 	 * @abstract
 	 * @param int $code
+	 * @param array $variables
 	 * @return cm_Controller_Page
 	 */
-	public function createPageByCode($code = 404) {
-		foreach($this->getRoutes() as $route) {
+	public function createPageByCode($code = 404, array $variables = array()) {
+		foreach($this->getRoutes() as $pageName => $route) {
 			if ($code === (int) $route->getPageConfig('error_code')) {
-				$page = new cm_Controller_Page($route->getPageConfig(), $this->getRequest(), $this->getResponse());
-				$page->setCode($code);
-				return $page;
+				return $this->createPage($pageName, $variables);
 			}
 		}
 		if ($code != 404) {
@@ -202,13 +217,15 @@ abstract class cm_Controller_Router_Abstract extends cm_Controller_Abstract {
 		}
 
 		$config = array();
-		foreach($config as $param => $value) {
+		foreach($pageConfig as $param => $value) {
 			if ($param == 'page' || $param == 'route') {
 				continue;
 			}
 			$config[$param] = $value;
 		}
 		$route->setPageConfig($config);
+
+		$route->setRouter($this);
 
 		return $route;
 	}

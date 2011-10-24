@@ -22,6 +22,9 @@ class cm_Controller_PageResolver {
 		return $this->_router;
 	}
 
+	/**
+	 * @return cm_Controller_Page
+	 */
 	public function getPage() {
 		$routes	= $this->getRouter()->getRoutes();
 		$request= $this->getRouter()->getRequest();
@@ -30,7 +33,8 @@ class cm_Controller_PageResolver {
 		foreach($routes as $pageName => $route) {
 			$variables = $route->parse($path);
 			if ($variables !== false) {
-				return $route->createPage($variables);
+				$page = $this->getRouter()->createPage($pageName, $variables);
+				return $page;
 			}
 		}
 

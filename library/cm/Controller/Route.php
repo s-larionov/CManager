@@ -40,7 +40,9 @@ class cm_Controller_Route {
 			if (!isset($var['name']) || !isset($var['rule'])) {
 				throw new cm_Controller_Route_Exception('Attributes @name and @rule are required');
 			}
-			$this->_vars[] = $var;
+			$varName = $var['name'];
+			unset($var['name']);
+			$this->_vars[$varName] = $var;
 		}
 	}
 
@@ -110,75 +112,70 @@ class cm_Controller_Route {
 	 * @throws cm_Controller_Exception
 	 */
 	public function parse($url) {
+		$url = trim($url, '/');
 		// получаем RegExp для проверки url
 		$rule = '~^' . str_replace('~', '\\~', trim($this->_route, '/')) . '$~';
 
-		$urlChunks	= explode('/', trim($url, '/'));
-		$ruleChunks	= explode('/', $rule);
+//		$countUrlChunks		= count(explode('/', $url));
+//		$countRuleChunks	= count(explode('/', trim($this->_route, '/')));
+//		$countOptionalVars	= 0;
 
-		foreach($ruleChunks as $chunk) {
+		$ruleVariables = array();
+		if (preg_match_all('~\(:(\w+)\)~', $rule, $ruleMatches)) {
+			foreach($ruleMatches[1] as $varName) {
+				if (!isset($this->_vars[$varName])) {
+					throw new cm_Controller_Route_Exception("Variable {$varName} nod defined in config");
+				}
+				if (isset($ruleVariables[$varName])) {
+					throw new cm_Controller_Route_Exception("Variable {$varName} multiple defined");
+				}
+				$ruleVariables[$varName] = $this->_vars[$varName];
+				$variableTpl = ':' . $varName;
+				$isOptional = isset($var['default']);
+				$variableRule = $ruleVariables[$varName]['rule'] . ($isOptional ? "|{$var['default']}|": '');
+				$rule = str_replace($variableTpl, $variableRule, $rule);
 
-		}
-
-
-
-		// в случае если кол-во элементов в правиле
-		// не соответсвует кол-ву эл-ов в url,
-		// то сразу возвращаем несовпадение (false)
-		// Учитываем необязательные параметры.
-		// @todo: сделать обработку @multiple
-		$countUrlChunks		= count($urlChunks);
-		$countRuleChunks	= count($ruleChunks);
-		$optionalVars		= array();
-		$countOptionalVars	= 0;
-		foreach($this->_vars as $var) {
-			if (isset($var['default'])) {
-				$optionalVars[] = $var;
-			}
-/*			if (isset($var['multiple'])) {
-				$countOptionalVars += (int) $var['multiple'];
-			}*/
-		}
-		$countOptionalVars	+= count($optionalVars);
-		$countEmptyVars		= $countRuleChunks - $countUrlChunks;
-
-		if ($countEmptyVars > $countOptionalVars) {
-			return false;
-		}
-
-		// добавляем значения в urlChunks для неуказанных элементов
-		if ($countEmptyVars > 0 && $countOptionalVars > 0) {
-			for ($i = $countOptionalVars - $countEmptyVars; $i < $countOptionalVars; $i++) {
-				$urlChunks[] = (string) $optionalVars[$i]['default'];
+//				if ($isOptional) {
+//					$countOptionalVars++;
+//				}
 			}
 		}
 
-		// @todo либо проверять порядок переменных в настройках роута, либо переделать так, что бы порядок не был важен
-		// генерируем регексп
-		foreach($this->_vars as $var) {
-			$isOptional	= isset($var['default']);
-			$varName	= '$' . $var['name'];
-			if (strpos($rule, $varName) === false) {
-				throw new cm_Controller_Route_Exception("Variable {$varName} not fall in route rule, but exists in route's config");
-			}
-			$rule = str_replace($varName,
-								$var['rule'] . ($isOptional? '|' . $var['default']: ''),
-								$rule);
-		}
+//		$countEmptyVars		= $countRuleChunks - $countUrlChunks;
 
-		$varsValues = array();
-		// проверяем
-		if (preg_match($rule, implode('/', $urlChunks), $matches)) {
-			// убираем первое совпадение
-			array_shift($matches);
+//		if ($countEmptyVars > $countOptionalVars) {
+//			return false;
+//		}
+
+		if (preg_match($rule, $url, $matches)) {
 			// вытаскиваем значения переменных
-			foreach($matches as $i => $match) {
-				$varsValues[(string) $this->_vars[$i]['name']] = $match;
+
+			$variables = array();
+			$i = 0;
+			foreach($ruleVariables as $variableName => $variableConfig) {
+				$variables[$variableName] = $this->_prepareVariable($matches[++$i], $variableConfig);
 			}
-			return $varsValues;
+
+			return $variables;
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param string $value
+	 * @param array $config
+	 * @return mixed
+	 */
+	protected function _prepareVariable($value, array $config) {
+		if (empty($value) && isset($config['default'])) {
+			$value = $config['default'];
+		}
+		$value = urldecode($value);
+		if (isset($config['explode'])) {
+			$value = explode($config['explode'], $value);
+		}
+		return $value;
 	}
 
 	/**
@@ -204,24 +201,18 @@ class cm_Controller_Route {
 	}
 
 	/**
-	 * @return cm_Controller_Router_Abstract
+	 * @param cm_Controller_Router_Abstract $router
+	 * @return cm_Controller_Route
 	 */
-	public function getRouter() {
-		if ($this->_router === null) {
-			$this->_router = cm_Registry::getFrontController()->getRouter();
-		}
-		return $this->_router;
+	public function setRouter(cm_Controller_Router_Abstract $router) {
+		$this->_router = $router;
+		return $this;
 	}
 
 	/**
-	 * @param array $variables
-	 * @return cm_Controller_Page
+	 * @return cm_Controller_Router_Abstract
 	 */
-	public function createPage(array $variables = array()) {
-		$page = new cm_Controller_Page($this->getPageConfig(), $this->getRouter()->getRequest(), $this->getRouter()->getResponse());
-		$page->setRoute($this)
-			->setVars($variables)
-			->setCode(200);
-		return $page;
+	public function getRouter() {
+		return $this->_router;
 	}
 }

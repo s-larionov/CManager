@@ -53,13 +53,19 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	protected $_route = null;
 
 	/**
+	 * @var array
+	 */
+	protected $_config = array();
+
+	/**
 	 * @param array $config
 	 * @param cm_Controller_Request_Abstract|cm_Controller_Request_HTTP $request
 	 * @param cm_Controller_Response_Abstract|cm_Controller_Response_HTTP $response
 	 */
 	public function __construct(array $config, $request, $response) {
 		parent::__construct($request, $response);
-		// @todo разбор конфига
+		$this->_config = $config;
+		$this->_addTags();
 	}
 
 	/**
@@ -132,19 +138,6 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	 * @return cm_Controller_Tag[]
 	 */
 	final public function getTags() {
-		if ($this->_tags === null) {
-			$this->_tags = array();
-			$this->_addTags();
-
-			/**
-			 * Вытаскиваем тэги из сессии
-			 */
-			$sessionData = $this->sessionTagsStorage()->getIterator();
-			foreach ($sessionData as $tag) {
-				$this->addTag($this->unserializeTag($tag));
-			}
-		}
-
 		return $this->_tags;
 	}
 
@@ -154,7 +147,54 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	 * @return void
 	 */
 	protected function _addTags() {
-		// TODO
+		$this->_tags = array();
+		// выбираем тэги
+
+		if (!isset($this->_config['tag'])) {
+			return;
+		}
+		$tags = $this->_config['tag'];
+		if (!is_array($tags) || !array_key_exists(0, $tags)) {
+			$tags = array($tags);
+		}
+
+		foreach ($tags as $tag) {
+			if (!isset($tag['name'])) {
+				throw new cm_Controller_Page_Exception("Attribute @name is required");
+			}
+			if (!isset($tag['namespace'])) {
+				throw new cm_Controller_Page_Exception("Attribute @namespace is required");
+			}
+
+			$params = isset($tag['params'])? $tag['params']: array();
+			if (!is_array($params)) {
+				$params = array($params);
+			}
+
+			// определяем режим работы
+			$mode = isset($tag['mode'])? $tag['mode']: null;
+			switch ($mode) {
+				case 'background':
+					$mode = cm_Controller_Tag::MODE_BACKGROUND;
+					break;
+				case 'action':
+					$mode = cm_Controller_Tag::MODE_ACTION;
+					break;
+				case 'normal':
+				default:
+					$mode = cm_Controller_Tag::MODE_NORMAL;
+					break;
+			}
+
+			// создаем объект
+			$this->addTag($this->createTag($tag['name'], $tag['namespace'], $mode, $params));
+		}
+
+		// Вытаскиваем тэги из сессии
+		$sessionData = $this->sessionTagsStorage()->getIterator();
+		foreach ($sessionData as $tag) {
+			$this->addTag($this->unserializeTag($tag));
+		}
 	}
 
 	/**
@@ -284,12 +324,56 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	}
 
 	/**
+	 * @return string
+	 */
+	protected function _getLayout() {
+		// TODO
+		if (isset($this->_config['layout'])) {
+			return $this->_config['layout'];
+		}
+		$currentRoute = $this->getRoute()->getParent();
+		$recursion = 0;
+		while ($currentRoute !== null) {
+			if (($layout = $currentRoute->getPageConfig('layout')) !== null) {
+				return $layout;
+			}
+			if (++$recursion > 50) {
+				throw new cm_Controller_Page_Exception("Recursion detected");
+			}
+			$currentRoute = $currentRoute->getParent();
+		}
+		if ($layout = $this->getRoute()->getRouter()->getStructure('layout')) {
+			return $layout;
+		}
+		throw new cm_Controller_Page_Exception("Attribute @layout not defined");
+	}
+
+	/**
+	 * @return string
+	 */
+	protected function _getTitle() {
+		if (!isset($this->_config['title'])) {
+			return '';
+		}
+		return $this->_config['title'];
+	}
+
+	/**
 	 * Возвращает урл перенаправления, если его нет возвращает FALSE.
 	 *
 	 * @return string | boolean
 	 */
 	public function getRedirectUrl() {
-		// TODO
+		if (!isset($this->_config['redirect'])) {
+			return false;
+		}
+
+		$url = $this->_config['redirect'];
+		if (strpos($url, '/') !== 0) {
+			$url = rtrim($this->getRequest()->getRawRequestUri(false), '/') .'/'. $url;
+		}
+
+		return $url;
 	}
 
 	/**
@@ -325,13 +409,6 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	/**
 	 * @return string
 	 */
-	protected function _getLayout() {
-
-	}
-
-	/**
-	 * @return string
-	 */
 	final public function getLayout() {
 		if ($this->_layout === null) {
 			$this->_layout = $this->_getLayout();
@@ -346,13 +423,6 @@ class cm_Controller_Page extends cm_Controller_Abstract {
 	final public function setLayout($value) {
 		$this->_layout = $value;
 		return $this;
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function _getTitle() {
-
 	}
 
 	/**
