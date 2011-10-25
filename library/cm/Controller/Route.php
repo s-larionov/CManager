@@ -114,7 +114,7 @@ class cm_Controller_Route {
 	public function parse($url) {
 		$url = trim($url, '/');
 		// получаем RegExp для проверки url
-		$rule = '~^' . str_replace('~', '\\~', trim($this->_route, '/')) . '$~';
+		$rule = '^' . trim($this->_route, '/') . '$';
 
 //		$countUrlChunks		= count(explode('/', $url));
 //		$countRuleChunks	= count(explode('/', trim($this->_route, '/')));
@@ -131,8 +131,11 @@ class cm_Controller_Route {
 				}
 				$ruleVariables[$varName] = $this->_vars[$varName];
 				$variableTpl = ':' . $varName;
-				$isOptional = isset($var['default']);
-				$variableRule = $ruleVariables[$varName]['rule'] . ($isOptional ? "|{$var['default']}|": '');
+				$isOptional = isset($ruleVariables[$varName]['default']);
+				$variableRule =  $ruleVariables[$varName]['rule'];
+				if ($isOptional) {
+					$variableRule = "$variableRule|{$ruleVariables[$varName]['default']}|";
+				}
 				$rule = str_replace($variableTpl, $variableRule, $rule);
 
 //				if ($isOptional) {
@@ -147,6 +150,7 @@ class cm_Controller_Route {
 //			return false;
 //		}
 
+		$rule = '~' . str_replace('~', '\\~', $rule) . '~';
 		if (preg_match($rule, $url, $matches)) {
 			// вытаскиваем значения переменных
 
@@ -155,6 +159,9 @@ class cm_Controller_Route {
 			foreach($ruleVariables as $variableName => $variableConfig) {
 				$variables[$variableName] = $this->_prepareVariable($matches[++$i], $variableConfig);
 			}
+
+			var_dump(array($url, $rule, $variables));
+
 
 			return $variables;
 		}
@@ -168,13 +175,55 @@ class cm_Controller_Route {
 	 * @return mixed
 	 */
 	protected function _prepareVariable($value, array $config) {
+		$value = urldecode($value);
 		if (empty($value) && isset($config['default'])) {
 			$value = $config['default'];
 		}
-		$value = urldecode($value);
+		if (isset($config['pattern'])) {
+			if (preg_match('~^' . str_replace('~', '\\~', $config['pattern']) . '$~', $value, $match)) {
+				if (count($match) > 1) {
+					$value = $match;
+				} else {
+					$value = $match[1];
+				}
+			} else {
+				$value = null;
+			}
+		}
+
 		if (isset($config['explode'])) {
 			$value = explode($config['explode'], $value);
 		}
+		$namespace = isset($config['namespace'])? $config['namespace']: 'string';
+		switch(true) {
+			case $namespace == 'int':
+				if (is_array($value)) {
+					foreach($value as &$val) {
+						$val = (int) $val;
+					}
+				} else {
+					$value = (int) $value;
+				}
+				break;
+			case $namespace == 'float':
+			case $namespace == 'double':
+				$value = (double) $value;
+				break;
+			case $namespace == 'bool':
+			case $namespace == 'boolean':
+				$value = (bool) $value;
+				break;
+			case $namespace == 'string':
+				break;
+			case class_exists($namespace) && $value !== null:
+				$value = new $namespace($value);
+				break;
+			case $value === null:
+				break;
+			default:
+				throw new cm_Controller_Route_Exception("Namespace {$config['namespace']} not defined");
+		}
+
 		return $value;
 	}
 
