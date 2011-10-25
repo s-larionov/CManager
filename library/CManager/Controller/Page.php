@@ -450,9 +450,9 @@ class CManager_Controller_Page extends CManager_Controller_Abstract {
 	 * @param array $variables
 	 * @return CManager_Controller_Page
 	 */
-	final public function setVars(array $variables) {
+	final public function setVariables(array $variables) {
 		foreach($variables as $name => $variable) {
-			$this->setVar($name, $variable);
+			$this->setVariable($name, $variable);
 		}
 		return $this;
 	}
@@ -462,7 +462,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract {
 	 * @param mixed $value
 	 * @return void
 	 */
-	final public function setVar($name, $value) {
+	final public function setVariable($name, $value) {
 		$this->_variables[$name] = $value;
 	}
 
@@ -470,11 +470,18 @@ class CManager_Controller_Page extends CManager_Controller_Abstract {
 	 * @param string $name
 	 * @return mixed
 	 */
-	final public function getVar($name) {
+	final public function getVariable($name) {
 		if (array_key_exists($name, $this->_variables)) {
 			return $this->_variables[$name];
 		}
 		return null;
+	}
+
+	/**
+	 * @return array
+	 */
+	final public function getVariables() {
+		return $this->_variables;
 	}
 
 	/**

@@ -116,10 +116,6 @@ class CManager_Controller_Route {
 		// получаем RegExp для проверки url
 		$rule = '^' . trim($this->_route, '/') . '$';
 
-//		$countUrlChunks		= count(explode('/', $url));
-//		$countRuleChunks	= count(explode('/', trim($this->_route, '/')));
-//		$countOptionalVars	= 0;
-
 		$ruleVariables = array();
 		if (preg_match_all('~\(:(\w+)\)~', $rule, $ruleMatches)) {
 			foreach($ruleMatches[1] as $varName) {
@@ -137,31 +133,17 @@ class CManager_Controller_Route {
 					$variableRule = "$variableRule|{$ruleVariables[$varName]['default']}|";
 				}
 				$rule = str_replace($variableTpl, $variableRule, $rule);
-
-//				if ($isOptional) {
-//					$countOptionalVars++;
-//				}
 			}
 		}
-
-//		$countEmptyVars		= $countRuleChunks - $countUrlChunks;
-
-//		if ($countEmptyVars > $countOptionalVars) {
-//			return false;
-//		}
 
 		$rule = '~' . str_replace('~', '\\~', $rule) . '~';
 		if (preg_match($rule, $url, $matches)) {
 			// вытаскиваем значения переменных
-
 			$variables = array();
 			$i = 0;
 			foreach($ruleVariables as $variableName => $variableConfig) {
 				$variables[$variableName] = $this->_prepareVariable($matches[++$i], $variableConfig);
 			}
-
-			var_dump(array($url, $rule, $variables));
-
 
 			return $variables;
 		}
@@ -263,5 +245,77 @@ class CManager_Controller_Route {
 	 */
 	public function getRouter() {
 		return $this->_router;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getPermissions() {
+		$permissions = array();
+
+		$currentRoute = $this;
+		while($currentRoute !== null) {
+			$currentPermissions = $currentRoute->getPageConfig('permission');
+			if ($currentPermissions !== null) {
+				$permissions = $this->_mergePermissions($permissions, $currentPermissions);
+			}
+			$currentRoute = $currentRoute->getParent();
+		}
+		if (($currentPermissions = $this->getRouter()->getStructure('permission')) !== null) {
+			$permissions = $this->_mergePermissions($permissions, $currentPermissions);
+		}
+
+		return $permissions;
+	}
+
+	/**
+	 * @param array $currentPermissions
+	 * @param array $parentPermissions
+	 * @return array
+	 */
+	protected function _mergePermissions(array $currentPermissions, array $parentPermissions) {
+		if (!empty($currentPermissions) && !array_key_exists(0, $currentPermissions)) {
+			$currentPermissions = array($currentPermissions);
+		}
+		if (!empty($parentPermissions) && !array_key_exists(0, $parentPermissions)) {
+			$parentPermissions = array($parentPermissions);
+		}
+
+		foreach($parentPermissions as $parentPermission) {
+			if (!$this->_isValidPermission($parentPermission) || !isset($parentPermission['pass'])) {
+				continue;
+			}
+			$append = true;
+			foreach($currentPermissions as $currentPermission) {
+				if (!$this->_isValidPermission($currentPermission)) {
+					continue;
+				}
+				if ($currentPermission['role'] == $parentPermission['role']) {
+					$append = false;
+					break;
+				}
+			}
+			if ($append) {
+				$currentPermissions[] = $parentPermission;
+			}
+		}
+		return $currentPermissions;
+	}
+
+	/**
+	 * @param array $permission
+	 * @return boolean
+	 */
+	protected function _isValidPermission($permission) {
+		if (!is_array($permission)) {
+			throw new CManager_Controller_Route_Exception("Permission defined in wrong format");
+		}
+		if (!isset($permission['role'])) {
+			throw new CManager_Controller_Route_Exception("Attribute @role is required for permission object");
+		}
+		if (!isset($permission['value'])) {
+			throw new CManager_Controller_Route_Exception("Attribute @value (allow or deny) is required for permission object");
+		}
+		return true;
 	}
 }
