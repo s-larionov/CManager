@@ -74,7 +74,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract {
 	 * @param string $name
 	 * @param string $namespace
 	 * @param string $mode
-	 * @param Zend_Config $params
+	 * @param Zend_Config|array $params
 	 * @return CManager_Controller_Tag
 	 */
 	public function createTag($name, $namespace, $mode, $params = null) {
