@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root layout="common.php">
+	<!-- <permission/> описывает права доступа к страницам (по-умолчанию не используются,                            -->
+	<!-- небходимо писать собственный PageResolver. Аттрибуты @role и @value обязательны                             -->
+	<!-- Получить доступ к ним можно через Route:                                                                    -->
+	<!-- $page->getRoute()->getPermissions();                                                                        -->
+	<permission role="guest"	value="allow" pass="pass"/>
+	<permission role="user"		value="allow" pass="pass"/>
+
 	<!-- Небольшое отступление. У любого тега можно указать атрибут @extends, где записать валидный xpath до другого -->
 	<!-- объекта внутри файла и текущий элемент будет пронаследован от найденного по xpath. Например:                -->
 	<!-- <tag extends="/root/shared/tag[@name = 'tag-name-1']"><params count="10"/></tag>                            -->
