@@ -1,6 +1,6 @@
 <?php
 
-class CManager_Event_Emitter {
+class CManager_EventEmitter {
 	private $_listeners = array();
 
 	/**

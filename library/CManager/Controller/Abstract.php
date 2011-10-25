@@ -1,6 +1,6 @@
 <?php
 
-class CManager_Controller_Abstract extends CManager_Event_Emitter {
+class CManager_Controller_Abstract extends CManager_EventEmitter {
 	/**
 	 * @var CManager_Controller_Response_Abstract
 	 */

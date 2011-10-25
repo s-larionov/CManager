@@ -1,6 +1,8 @@
 <?php
 
 class CManager_Controller_Page extends CManager_Controller_Abstract implements CManager_Controller_Page_Interface {
+	const CONTENT_TYPE_DEFAULT = 'text/html; charset=utf-8';
+
 	/**
 	 * Код заголовка (200, 403 и т.д.)
 	 *
@@ -58,6 +60,11 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	protected $_config = array();
 
 	/**
+	 * @var array
+	 */
+	protected $_contentType = self::CONTENT_TYPE_DEFAULT;
+
+	/**
 	 * @param array $config
 	 * @param CManager_Controller_Request_Abstract|CManager_Controller_Request_Http $request
 	 * @param CManager_Controller_Response_Abstract|CManager_Controller_Response_Http $response
@@ -66,6 +73,12 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		parent::__construct($request, $response);
 		$this->_config = $config;
 		$this->_addTags();
+		if (isset($config['error_code'])) {
+			$this->setCode($config['error_code']);
+		}
+		if (isset($config['content_type'])) {
+			$this->setContentType($config['content_type']);
+		}
 	}
 
 	/**
@@ -414,6 +427,22 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	/**
 	 * @return string
 	 */
+	final public function getContenttype() {
+		return $this->_contentType;
+	}
+
+	/**
+	 * @param string $contentType
+	 * @return CManager_Controller_Page
+	 */
+	final public function setContentType($contentType) {
+		$this->_contentType = (string) $contentType;
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
 	final public function getLayout() {
 		if ($this->_layout === null) {
 			$this->_layout = $this->_getLayout();
@@ -503,5 +532,12 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 */
 	final public function getRoute() {
 		return $this->_route;
+	}
+
+	public function sendHeaders() {
+		// посылаем заголовки
+		$response = $this->getResponse();
+		$response->setHttpResponseCode($this->getCode());
+		$response->setHeader('Content-Type', $this->getContenttype());
 	}
 }

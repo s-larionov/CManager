@@ -38,7 +38,6 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 		 * перенаправление - делаем его
 		 */
 		$this->getPage()->tryRedirect();
-		// TODO:
 	}
 
 	/**
@@ -60,7 +59,11 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 */
 	public function generateUrl($pageName, array $variables = array()) {
 		if (!isset($this->_routes[$pageName])) {
-			return "#{$pageName}#?" . implode('&amp;', $variables);
+			$url = "#{$pageName}#" . (count($variables) > 0? '?': '');
+			foreach($variables as $name => $value) {
+				$url .= urlencode($name) . '=' . urlencode($value) . '&amp;';
+			}
+			return $url;
 		}
 		return $this->_routes[$pageName]->generateUrl($variables);
 	}
@@ -137,9 +140,8 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 					throw new CManager_Controller_Router_Exception("{$classPage} must be inherited from CManager_Controller_Page");
 				}
 				$page->setRoute($routes[$pageName])
-					->setVariables($variables)
-					->setCode($code? $code: 200)
-					->init();
+					->setVariables($variables);
+				$page->init();
 			} catch (CManager_Controller_Page_404Exception $e) {
 				return $this->createPageByCode(404);
 			}

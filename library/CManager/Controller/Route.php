@@ -93,8 +93,8 @@ class CManager_Controller_Route {
 			}
 		}
 		if ($quoteQueryParams) {
-			foreach($vars as &$var) {
-				$var = urlencode($var);
+			foreach($vars as $name => &$var) {
+				$var = urlencode($name) . ($var !== ''? '=' . urlencode($var): '');
 			}
 		}
 		if (count($vars) > 0) {

@@ -61,12 +61,13 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 
 		$this->getRouter()->run();
 
-		$this->getRouter()->getPage()->runTagsByMode(CManager_Controller_Tag::MODE_BACKGROUND);
-
+		$page = $this->getRouter()->getPage();
+		$page->sendHeaders();
+		$page->runTagsByMode(CManager_Controller_Tag::MODE_BACKGROUND);
 		if ($request->hasRequestTag()) {
-			$content = $this->getRouter()->getPage()->runTagsByName($request->getRequestTag());
+			$content = $page->runTagsByName($request->getRequestTag());
 		} else {
-			$content = $this->getRouter()->getPage()->render();
+			$content = $page->render();
 		}
 
 		$config = CManager_Registry::getConfig();

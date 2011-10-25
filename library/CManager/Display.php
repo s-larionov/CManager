@@ -45,7 +45,7 @@ class CManager_Display {
 		}
 
 		return $out;
-		}
+	}
 
 	/**
 	 * @return string
@@ -54,4 +54,13 @@ class CManager_Display {
 		return self::getApplication()->getRouter()->getPage()->getTitle();
 	}
 
+	/**
+	 * @static
+	 * @param string $name
+	 * @param array $params
+	 * @return string
+	 */
+	public static function url($name, array $params = array()) {
+		return self::getApplication()->getRouter()->generateUrl($name, $params);
+	}
 }
