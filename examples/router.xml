@@ -14,7 +14,7 @@
 		<!-- @name      - Название тега, по которому он будет вызываться (и по которому                              -->
 		<!--              проще всего строить xpath для @extends) Если несколько тегов                               -->
 		<!--              с одинаковым @name, то будут вызваны они все в порядке "нормального потока"                -->
-		<!-- @namespace - Название класса наследника cm_Controller_Action_Abstract,                                  -->
+		<!-- @namespace - Название класса наследника CManager_Controller_Action_Abstract,                                  -->
 		<!--              который будет вызван для рендера тега                                                      -->
 		<!-- @mode      - Необязательный атрибует. Может принимать одно из следующих                                 -->
 		<!--              значений: normal (по-умолчанию), background                                                -->
@@ -22,7 +22,7 @@
 		<!--                  background - выполняется всегда, вне зависимости от вызовов пользователя               -->
 		<tag name="tag-name-1" namespace="CMMods_Content">
 			<!-- Внутри <tag/> может содержать необязательный элемент <params/>, который описыват параметры,         -->
-			<!-- которые будут доступны по $this->getParam() из cm_Controller_Action_Abstract                        -->
+			<!-- которые будут доступны по $this->getParam() из CManager_Controller_Action_Abstract                        -->
 			<!-- <params/> может быть записан по-разному. Например:                                                  -->
 			<!-- <params prefix="pub_" type="news" count="4"/>                                                       -->
 			<!-- или то же самое можно записать как:                                                                 -->
@@ -31,7 +31,7 @@
 			<!--     <type value="news"/>                                                                            -->
 			<!--     <count value="4"/>                                                                              -->
 			<!-- </params>                                                                                           -->
-			<!-- Из cm_Controller_Action_Abstract параметры будут доступны следующим образом:                        -->
+			<!-- Из CManager_Controller_Action_Abstract параметры будут доступны следующим образом:                        -->
 			<!-- echo $this->getParam('prefix'); // "pub_"                                                           -->
 			<!-- echo $this->getParam('type');   // "news"                                                           -->
 			<!-- echo $this->getParam('count');  // "4"                                                              -->
@@ -49,7 +49,7 @@
 			<!--         <element id="3">Value 3</element>                                                           -->
 			<!--     </cascade>                                                                                      -->
 			<!-- </params>                                                                                           -->
-			<!-- Из cm_Controller_Action_Abstract мы сможем получить следующие данные:                               -->
+			<!-- Из CManager_Controller_Action_Abstract мы сможем получить следующие данные:                               -->
 			<!-- $this->getParam('type')    // array('Type', 'Type2', 'Type3', 'Type4')                              -->
 			<!-- $this->getParam('cascade') // array(                                                                -->
 			<!--                            //     'cascade' => array(                                               -->
@@ -69,7 +69,7 @@
 	<!-- @name       - Название страницы, используется для хранения <route/>'ов                                      -->
 	<!--               и для генерации ссылок (->getRouter()->generateUrl('name', array(...))                        -->
 	<!-- @error_code - Код страницы (404, 403, 401 и т.д.). Используется для создания технических страниц.           -->
-	<!-- @namespace  - Класс, который будет ответственным за рендер страницы (наследник cm_Controller_Page)          -->
+	<!-- @namespace  - Класс, который будет ответственным за рендер страницы (наследник CManager_Controller_Page)          -->
 	<page name="index">
 		<!-- <route/> описывать разбор url. Имеет обязательный атрибут @url                                          -->
 		<!-- @url - Паттерн разбора ссылки. Может содержать внутри себя переменные: записываются как (:varname)      -->
