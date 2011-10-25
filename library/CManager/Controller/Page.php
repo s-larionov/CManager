@@ -1,6 +1,6 @@
 <?php
 
-class CManager_Controller_Page extends CManager_Controller_Abstract {
+class CManager_Controller_Page extends CManager_Controller_Abstract implements CManager_Controller_Page_Interface {
 	/**
 	 * Код заголовка (200, 403 и т.д.)
 	 *
@@ -67,6 +67,11 @@ class CManager_Controller_Page extends CManager_Controller_Abstract {
 		$this->_config = $config;
 		$this->_addTags();
 	}
+
+	/**
+	 * Инициализация страницы. Для переопределения в дочерних страницах
+	 */
+	public function init() {}
 
 	/**
 	 * Создает и возвращает тэг
