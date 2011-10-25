@@ -93,6 +93,16 @@ class CManager_String {
 		return $text;
 	}
 
+	/**
+	 * Обезопасить строку для использования в XSLT с использованием @disable-output-escaping="yes"
+	 * и с расстановкой <br/> вместо переводов строк
+	 *
+	 * @static
+	 * @param string $text
+	 * @param int $trimSymbols
+	 * @param string $cutText
+	 * @return string
+	 */
 	public static function prepareText($text, $trimSymbols = null, $cutText = '…') {
 		$text = trim(preg_replace("~(\\r?\\n){2,}~", "\n\n", $text));
 		$text = nl2br(htmlspecialchars(self::cut($text, $trimSymbols, $cutText)));

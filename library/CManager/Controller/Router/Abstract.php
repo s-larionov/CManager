@@ -122,7 +122,19 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 		$routes = $this->getRoutes();
 		if (isset($routes[$pageName])) {
 			$code = (int) $routes[$pageName]->getPageConfig('error_code');
-			$page = new CManager_Controller_Page($routes[$pageName]->getPageConfig(), $this->getRequest(), $this->getResponse());
+			$pageConfig = $routes[$pageName]->getPageConfig();
+			$classPage = 'CManager_Controller_Page';
+			if (isset($pageConfig['namespace'])) {
+				if (!class_exists($pageConfig['namespace'])) {
+					throw new CManager_Controller_Router_Exception("Class {$pageConfig['namespace']} not defined");
+				}
+				$classPage = $pageConfig['namespace'];
+			}
+
+			$page = new $classPage($pageConfig, $this->getRequest(), $this->getResponse());
+			if (!($page instanceof CManager_Controller_Page)) {
+				throw new CManager_Controller_Router_Exception("{$classPage} must be inherited from CManager_Controller_Page");
+			}
 			$page->setRoute($routes[$pageName])
 				->setVars($variables)
 				->setCode($code? $code: 200);
