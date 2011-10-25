@@ -133,15 +133,16 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 
 			try {
 				$page = new $classPage($pageConfig, $this->getRequest(), $this->getResponse());
+				if (!($page instanceof CManager_Controller_Page)) {
+					throw new CManager_Controller_Router_Exception("{$classPage} must be inherited from CManager_Controller_Page");
+				}
+				$page->setRoute($routes[$pageName])
+					->setVariables($variables)
+					->setCode($code? $code: 200)
+					->init();
 			} catch (CManager_Controller_Page_404Exception $e) {
 				return $this->createPageByCode(404);
 			}
-			if (!($page instanceof CManager_Controller_Page)) {
-				throw new CManager_Controller_Router_Exception("{$classPage} must be inherited from CManager_Controller_Page");
-			}
-			$page->setRoute($routes[$pageName])
-				->setVariables($variables)
-				->setCode($code? $code: 200);
 			return $page;
 		}
 		return $this->createPageByCode(404);

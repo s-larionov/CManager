@@ -3,7 +3,7 @@
 interface CManager_Controller_Page_Interface {
 	public function __construct(array $config,
 								CManager_Controller_Request_Abstract $request,
-								CManager_Controller_Response_Abstract$response);
+								CManager_Controller_Response_Abstract $response);
 
 	public function init();
 
@@ -36,7 +36,5 @@ interface CManager_Controller_Page_Interface {
 	public function createTag($name, $namespace, $mode, $params = null);
 	public function addTag(CManager_Controller_Tag $tag);
 	public function unserializeTag($data);
-
-	public function sessionTagsStorage();
 	public function addSessionTag(CManager_Controller_Tag $tag, $path = null);
 }

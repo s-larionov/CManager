@@ -62,7 +62,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @param CManager_Controller_Request_Abstract|CManager_Controller_Request_Http $request
 	 * @param CManager_Controller_Response_Abstract|CManager_Controller_Response_Http $response
 	 */
-	public function __construct(array $config, $request, $response) {
+	public function __construct(array $config, CManager_Controller_Request_Abstract $request, CManager_Controller_Response_Abstract $response) {
 		parent::__construct($request, $response);
 		$this->_config = $config;
 		$this->_addTags();
@@ -115,8 +115,8 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 */
 	final public function addSessionTag(CManager_Controller_Tag $tag, $path = null) {
 		$key = 'tag_'. $tag->name;
-		$this->sessionTagsStorage($path)->{$key} = $tag->toArray();
-		$this->sessionTagsStorage($path)->setExpirationHops(1, $key);
+		$this->_sessionTagsStorage($path)->{$key} = $tag->toArray();
+		$this->_sessionTagsStorage($path)->setExpirationHops(1, $key);
 		return $this;
 	}
 
@@ -124,7 +124,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @param string $path
 	 * @return Zend_Session_Namespace
 	 */
-	final private function sessionTagsStorage($path = null) {
+	final private function _sessionTagsStorage($path = null) {
 		if (!$path) {
 			$path = $this->getRequest()->getPath();
 		}
@@ -196,7 +196,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		}
 
 		// Вытаскиваем тэги из сессии
-		$sessionData = $this->sessionTagsStorage()->getIterator();
+		$sessionData = $this->_sessionTagsStorage()->getIterator();
 		foreach ($sessionData as $tag) {
 			$this->addTag($this->unserializeTag($tag));
 		}
