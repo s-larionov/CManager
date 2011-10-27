@@ -1,6 +1,6 @@
 <?php
 
-abstract class CManager_Controller_Router_Config_Abstract {
+abstract class CManager_Controller_Router_Config_Abstract /*implements Serializable*/ {
 	const PASS_ATTRIBUTE		= 'pass';
 
 	protected $_name = '';
@@ -39,6 +39,13 @@ abstract class CManager_Controller_Router_Config_Abstract {
 	 * @var CManager_Controller_Router_Config_Adapter_Abstract
 	 */
 	protected $_adapter = null;
+
+//	/**
+//	 * @return array
+//	 */
+//	public function __sleep() {
+//		return array('_data', '_parent');
+//	}
 
 	/**
 	 * @param mixed $config

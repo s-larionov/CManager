@@ -7,6 +7,14 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 	protected $_xmlFile = '';
 
 	/**
+	 * Load file error string.
+	 * Is null if there was no error while file loading
+	 *
+	 * @var string
+	*/
+	protected $_loadFileErrorStr = null;
+
+	/**
 	 * @param string $xmlFile
 	 * @param CManager_Controller_Request_Http $request
 	 * @param CManager_Controller_Response_Http $response
@@ -24,11 +32,48 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 		if (!file_exists($this->_xmlFile)) {
 			throw new CManager_Controller_Router_Exception("File '{$this->_xmlFile}' not found");
 		}
-//		$structure = new CManager_Controller_Router_Xml_Section($this->_xmlFile);
+
+/*		$a = microtime(true);*/
+		set_error_handler(array($this, '_loadFileErrorHandler')); // Warnings and errors are suppressed
 		$xml = simplexml_load_file($this->_xmlFile);
+		restore_error_handler();
+
+		// Check if there was a error while loading file
+		if ($this->_loadFileErrorStr !== null) {
+			throw new CManager_Controller_Router_Xml_Exception($this->_loadFileErrorStr);
+		}
+
 		$structure = new CManager_Controller_Router_Config_Structure(
 				$xml, new CManager_Controller_Router_Config_Adapter_Xml());
+/*		$a = microtime(true) - $a;
+		var_dump(CManager_Number::format($a, 5));
+
+		$a = microtime(true);
+		$str = serialize($structure);
+		$a = microtime(true) - $a;
+		var_dump(CManager_Number::format($a, 5));
+
+		$a = microtime(true);
+		$structure = unserialize($str);
+		$a = microtime(true) - $a;
+		var_dump(CManager_Number::format($a, 5));*/
 
 		return $structure;
+	}
+
+	/**
+	 * Handle any errors from simplexml_load_file or parse_ini_file
+	 *
+	 * @param integer $errno
+	 * @param string $errstr
+	 * @param string $errfile
+	 * @param integer $errline
+	 */
+	protected function _loadFileErrorHandler($errno, $errstr, $errfile, $errline) {
+		if ($this->_loadFileErrorStr === null) {
+			$this->_loadFileErrorStr = $errstr;
+		} else {
+			$this->_loadFileErrorStr .= (PHP_EOL . $errstr);
+		}
 	}
 }
