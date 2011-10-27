@@ -151,7 +151,7 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 */
 	public function createPageByCode($code = 404, array $variables = array()) {
 		foreach($this->getRoutes() as $pageName => $route) {
-			if ($code === (int) $route->getPageConfig('error_code')) {
+			if ($code === (int) $route->getPageConfig()->error_code) {
 				return $this->createPage($pageName, $variables);
 			}
 		}

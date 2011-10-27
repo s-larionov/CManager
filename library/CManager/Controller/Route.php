@@ -122,10 +122,10 @@ class CManager_Controller_Route {
 				}
 				$ruleVariables[$varName] = $this->_vars[$varName];
 				$variableTpl = ':' . $varName;
-				$isOptional = isset($ruleVariables[$varName]['default']);
-				$variableRule =  $ruleVariables[$varName]['rule'];
+				$isOptional = isset($ruleVariables[$varName]->default);
+				$variableRule =  $ruleVariables[$varName]->rule;
 				if ($isOptional) {
-					$variableRule = "$variableRule|{$ruleVariables[$varName]['default']}|";
+					$variableRule = "$variableRule|{$ruleVariables[$varName]->default}|";
 				}
 				$rule = str_replace($variableTpl, $variableRule, $rule);
 			}
