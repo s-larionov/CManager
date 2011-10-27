@@ -18,13 +18,9 @@ class CManager_Controller_Tag {
 	 */
 	private $_mode;
 	/**
-	 * @var Zend_Config
+	 * @var CManager_Controller_Router_Config_TagParam[]
 	 */
-	private $_params;
-	/**
-	 * @var arrays
-	 */
-	private $_rawParams;
+	private $_params = array();
 
 	/**
 	 * @var CManager_Controller_Action_Abstract|CManager_Controller_Action_Cache
@@ -40,31 +36,16 @@ class CManager_Controller_Tag {
 	 * @param string $name
 	 * @param string $namespace
 	 * @param string $mode
-	 * @param array|Zend_Config $params
+	 * @param CManager_Controller_Router_Config_TagParam[] $params
 	 */
-	public function __construct($name, $namespace, $mode, $params = null) {
-		$this->_name = $name;
-		$this->_namespace = $namespace;
-		$this->_mode = $mode;
-		
-		if (is_object($params) && $params instanceof Zend_Config) {
-			$this->_params = $params;
-		} else {
-			$this->_params = new Zend_Config((array) $params, true);
-		}
-		$this->_params->tagName	= $name;
-		$this->_params->tagOwner= $this;
-	}
+	public function __construct($name, $namespace, $mode, array $params = array()) {
+		$this->_name		= $name;
+		$this->_namespace	= $namespace;
+		$this->_mode		= $mode;
 
-	/**
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function __get($key) {
-		if (isset($this->{'_'. $key})) {
-			return $this->{'_'. $key};
+		foreach($params as $param) {
+			$this->_params[$param->name] = $param;
 		}
-		return null;
 	}
 
 	/**
@@ -80,21 +61,47 @@ class CManager_Controller_Tag {
 
 	/**
 	 * @param string $key
-	 * @param mixed $value
-	 * @return void
+	 * @return mixed
 	 */
-	public function setParam($key, $value) {
-		$this->_params->$key = $value;
+	public function __get($key) {
+		if (isset($this->{'_'. $key})) {
+			return $this->{'_'. $key};
+		}
+		return null;
 	}
 
 	/**
 	 * @param string $key
+	 * @param mixed $default
 	 * @return mixed
 	 */
-	public function getParam($key) {
-		return $this->_params->$key;
+	public function getParam($key, $default = null) {
+		if (!array_key_exists($key, $this->_params)) {
+			return $default;
+		}
+		$param = $this->_params[$key];
+		if (count($param->param) > 0) {
+			return $this->_paramToArray($param);
+		}
+		return $param->value;
 	}
 
+	/**
+	 * @param CManager_Controller_Router_Config_TagParam $param
+	 * @return array
+	 */
+	protected function _paramToArray(CManager_Controller_Router_Config_TagParam $param) {
+		$result = array();
+		foreach($param->param as $subParam) {
+			if (count($subParam->param) > 0) {
+				$result[$subParam->name] = $this->_paramToArray($subParam);
+			} else {
+				$result[$subParam->name] = $subParam->value;
+			}
+		}
+		return $result;
+	}
+	
 	/**
 	 * @throws CManager_Controller_Exception
 	 * @param CManager_Controller_Request_Abstract $request
@@ -103,13 +110,13 @@ class CManager_Controller_Tag {
 	 */
 	public function getController($request = null, $response = null) {
 		if ($this->_controller === null) {
-			$className = str_replace('.', '_', $this->_namespace);
+			$className = $this->_namespace;
 			$class = new ReflectionClass($className);
 			if (!$class->isSubclassOf(new ReflectionClass('CManager_Controller_Action_Abstract'))) {
 				throw new CManager_Controller_Exception("Вызов тэга {$this->_name}. ".
 								"Класс должен быть наследником CManager_Controller_Action_Abstract");
 			}
-			$this->_controller = $class->newInstance($this->_params, $request, $response);
+			$this->_controller = $class->newInstance($this, $request, $response);
 		}
 		if ($request !== null) {
 			$this->_controller->setRequest($request);

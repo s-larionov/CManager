@@ -3,9 +3,9 @@
 abstract class CManager_Controller_Action_Abstract extends CManager_Controller_Abstract {
 
 	/**
-	 * @var Zend_Config
+	 * @var CManager_Controller_Tag
 	 */
-	protected $params;
+	protected $_tag = null;
 
 	/**
 	 * @var CManager_Controller_Router_Abstract
@@ -13,13 +13,13 @@ abstract class CManager_Controller_Action_Abstract extends CManager_Controller_A
 	protected $_router = null;
 
 	/**
-	 * @param Zend_Config $params
+	 * @param CManager_Controller_Tag $tag
 	 * @param CManager_Controller_Request_Abstract $request
 	 * @param CManager_Controller_Response_Abstract $response
 	 */
-	public function __construct(Zend_Config $params, $request = null, $response = null) {
+	public function __construct(CManager_Controller_Tag $tag, $request = null, $response = null) {
 		parent::__construct($request, $response);
-		$this->params = $params;
+		$this->_tag = $tag;
 	}
 
 	/**
@@ -58,25 +58,7 @@ abstract class CManager_Controller_Action_Abstract extends CManager_Controller_A
 	 *	@return mixed
 	 */
 	protected function getParam($name, $default = null) {
-		return $this->params->get($name, $default);
-	}
-
-	/**
-	 * Возвращает значение входящего параметра по имени.
-	 *
-	 * @param string  $name   имя параметра
-	 * @param mixed   $value
-	 * @return void
-	 */
-	protected function setParam($name, $value = null) {
-		$this->params->$name = $value;
-	}
-
-	/**
-	 * @return Zend_Config
-	 */
-	protected function getParams() {
-	    return $this->params;
+		return $this->_tag->getParam($name, $default);
 	}
 
 	/**
@@ -86,7 +68,7 @@ abstract class CManager_Controller_Action_Abstract extends CManager_Controller_A
 	 * @return boolean
 	 */
 	protected function hasParam($name) {
-		return ($this->params->get($name, null) !== null);
+		return ($this->_tag->getParam($name, null) !== null);
 	}
 
 	/**

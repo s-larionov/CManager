@@ -1,7 +1,7 @@
 <?php
 
 interface CManager_Controller_Page_Interface {
-	public function __construct(array $config,
+	public function __construct(CManager_Controller_Router_Config_Page $config,
 								CManager_Controller_Request_Abstract $request,
 								CManager_Controller_Response_Abstract $response);
 

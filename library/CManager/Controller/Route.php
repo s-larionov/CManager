@@ -12,7 +12,7 @@ class CManager_Controller_Route {
 	protected $_vars = array();
 
 	/**
-	 * @var array
+	 * @var CManager_Controller_Router_Config_Page
 	 */
 	protected $_pageConfig = array();
 
@@ -28,7 +28,7 @@ class CManager_Controller_Route {
 
 	/**
 	 * @param string $route
-	 * @param array $varsRules
+	 * @param CManager_Controller_Router_Config_RouteVar[] $varsRules
 	 */
 	public function __construct($route, array $varsRules = array()) {
 		if (!is_array($varsRules)) {
@@ -37,12 +37,7 @@ class CManager_Controller_Route {
 		$this->_route = (string) $route;
 
 		foreach($varsRules as $var) {
-			if (!isset($var['name']) || !isset($var['rule'])) {
-				throw new CManager_Controller_Route_Exception('Attributes @name and @rule are required');
-			}
-			$varName = $var['name'];
-			unset($var['name']);
-			$this->_vars[$varName] = $var;
+			$this->_vars[$var->name] = $var;
 		}
 	}
 
@@ -210,23 +205,17 @@ class CManager_Controller_Route {
 	}
 
 	/**
-	 * @param string $param
-	 * @return string[]|string
+	 * @return CManager_Controller_Router_Config_Page
 	 */
-	public function getPageConfig($param = null) {
-		if ($param === null) {
-			return $this->_pageConfig;
-		} else if (isset($this->_pageConfig[(string) $param])) {
-			return $this->_pageConfig[(string) $param];
-		}
-		return null;
+	public function getPageConfig() {
+		return $this->_pageConfig;
 	}
 
 	/**
-	 * @param array  $config
+	 * @param CManager_Controller_Router_Config_Page  $config
 	 * @return CManager_Controller_Route
 	 */
-	public function setPageConfig(array $config) {
+	public function setPageConfig(CManager_Controller_Router_Config_Page $config) {
 		$this->_pageConfig = $config;
 		return $this;
 	}
@@ -248,74 +237,9 @@ class CManager_Controller_Route {
 	}
 
 	/**
-	 * @return array
+	 * @return CManager_Controller_Router_Config_Permission[]
 	 */
 	public function getPermissions() {
-		$permissions = array();
-
-		$currentRoute = $this;
-		while($currentRoute !== null) {
-			$currentPermissions = $currentRoute->getPageConfig('permission');
-			if ($currentPermissions !== null) {
-				$permissions = $this->_mergePermissions($permissions, $currentPermissions);
-			}
-			$currentRoute = $currentRoute->getParent();
-		}
-		if (($currentPermissions = $this->getRouter()->getStructure('permission')) !== null) {
-			$permissions = $this->_mergePermissions($permissions, $currentPermissions);
-		}
-
-		return $permissions;
-	}
-
-	/**
-	 * @param array $currentPermissions
-	 * @param array $parentPermissions
-	 * @return array
-	 */
-	protected function _mergePermissions(array $currentPermissions, array $parentPermissions) {
-		if (!empty($currentPermissions) && !array_key_exists(0, $currentPermissions)) {
-			$currentPermissions = array($currentPermissions);
-		}
-		if (!empty($parentPermissions) && !array_key_exists(0, $parentPermissions)) {
-			$parentPermissions = array($parentPermissions);
-		}
-
-		foreach($parentPermissions as $parentPermission) {
-			if (!$this->_isValidPermission($parentPermission) || !isset($parentPermission['pass'])) {
-				continue;
-			}
-			$append = true;
-			foreach($currentPermissions as $currentPermission) {
-				if (!$this->_isValidPermission($currentPermission)) {
-					continue;
-				}
-				if ($currentPermission['role'] == $parentPermission['role']) {
-					$append = false;
-					break;
-				}
-			}
-			if ($append) {
-				$currentPermissions[] = $parentPermission;
-			}
-		}
-		return $currentPermissions;
-	}
-
-	/**
-	 * @param array $permission
-	 * @return boolean
-	 */
-	protected function _isValidPermission($permission) {
-		if (!is_array($permission)) {
-			throw new CManager_Controller_Route_Exception("Permission defined in wrong format");
-		}
-		if (!isset($permission['role'])) {
-			throw new CManager_Controller_Route_Exception("Attribute @role is required for permission object");
-		}
-		if (!isset($permission['value'])) {
-			throw new CManager_Controller_Route_Exception("Attribute @value (allow or deny) is required for permission object");
-		}
-		return true;
+		return $this->getPageConfig()->permission;
 	}
 }

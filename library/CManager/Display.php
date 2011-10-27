@@ -48,10 +48,11 @@ class CManager_Display {
 	}
 
 	/**
+	 * @param string $mode
 	 * @return string
 	 */
-	public static function title() {
-		return self::getApplication()->getRouter()->getPage()->getTitle();
+	public static function title($mode = 'default') {
+		return self::getApplication()->getRouter()->getPage()->getTitle($mode);
 	}
 
 	/**

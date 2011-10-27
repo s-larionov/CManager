@@ -18,11 +18,11 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	protected $_layout;
 
 	/**
-	 * Заголовок страницы
+	 * Заголовки страницы (ключ == mode)
 	 *
-	 * @var string
+	 * @var string[]
 	 */
-	protected $_title;
+	protected $_titles = array();
 
 	/**
 	 * Мета данные страницы
@@ -55,7 +55,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	protected $_route = null;
 
 	/**
-	 * @var array
+	 * @var CManager_Controller_Router_Config_Page
 	 */
 	protected $_config = array();
 
@@ -65,20 +65,17 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	protected $_contentType = self::CONTENT_TYPE_DEFAULT;
 
 	/**
-	 * @param array $config
+	 * @param CManager_Controller_Router_Config_Page $config
 	 * @param CManager_Controller_Request_Abstract|CManager_Controller_Request_Http $request
 	 * @param CManager_Controller_Response_Abstract|CManager_Controller_Response_Http $response
 	 */
-	public function __construct(array $config, CManager_Controller_Request_Abstract $request, CManager_Controller_Response_Abstract $response) {
+	public function __construct(CManager_Controller_Router_Config_Page $config, CManager_Controller_Request_Abstract $request, CManager_Controller_Response_Abstract $response) {
 		parent::__construct($request, $response);
 		$this->_config = $config;
 		$this->_addTags();
-		if (isset($config['error_code'])) {
-			$this->setCode($config['error_code']);
-		}
-		if (isset($config['content_type'])) {
-			$this->setContentType($config['content_type']);
-		}
+
+		$this->setCode($config->error_code);
+		$this->setContentType($config->content_type);
 	}
 
 	/**
@@ -168,30 +165,9 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		$this->_tags = array();
 		// выбираем тэги
 
-		if (!isset($this->_config['tag'])) {
-			return;
-		}
-		$tags = $this->_config['tag'];
-		if (!is_array($tags) || !array_key_exists(0, $tags)) {
-			$tags = array($tags);
-		}
-
-		foreach ($tags as $tag) {
-			if (!isset($tag['name'])) {
-				throw new CManager_Controller_Page_Exception("Attribute @name is required");
-			}
-			if (!isset($tag['namespace'])) {
-				throw new CManager_Controller_Page_Exception("Attribute @namespace is required");
-			}
-
-			$params = isset($tag['params'])? $tag['params']: array();
-			if (!is_array($params)) {
-				$params = array($params);
-			}
-
+		foreach ($this->_config->tag as $tag) {
 			// определяем режим работы
-			$mode = isset($tag['mode'])? $tag['mode']: null;
-			switch ($mode) {
+			switch ($tag->mode) {
 				case 'background':
 					$mode = CManager_Controller_Tag::MODE_BACKGROUND;
 					break;
@@ -205,7 +181,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 			}
 
 			// создаем объект
-			$this->addTag($this->createTag($tag['name'], $tag['namespace'], $mode, $params));
+			$this->addTag($this->createTag($tag->name, $tag->namespace, $mode, $tag->param));
 		}
 
 		// Вытаскиваем тэги из сессии
@@ -345,35 +321,27 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return string
 	 */
 	protected function _getLayout() {
-		// TODO
-		if (isset($this->_config['layout'])) {
-			return $this->_config['layout'];
+		if ($this->_config->layout === null) {
+			throw new CManager_Controller_Page_Exception("Attribute @layout not defined");
 		}
-		$currentRoute = $this->getRoute()->getParent();
-		$recursion = 0;
-		while ($currentRoute !== null) {
-			if (($layout = $currentRoute->getPageConfig('layout')) !== null) {
-				return $layout;
-			}
-			if (++$recursion > 50) {
-				throw new CManager_Controller_Page_Exception("Recursion detected");
-			}
-			$currentRoute = $currentRoute->getParent();
-		}
-		if ($layout = $this->getRoute()->getRouter()->getStructure('layout')) {
-			return $layout;
-		}
-		throw new CManager_Controller_Page_Exception("Attribute @layout not defined");
+		return $this->_config->layout;
 	}
 
 	/**
+	 * @param string $mode
 	 * @return string
 	 */
-	protected function _getTitle() {
-		if (!isset($this->_config['title'])) {
-			return '';
+	protected function _getTitle($mode = 'default') {
+		// TODO: вытаскивать титл из стркутуры
+		foreach($this->_config->title as $title) {
+			if ($title->mode == $mode) {
+				return (string) $title->value;
+			}
 		}
-		return $this->_config['title'];
+		if ($mode != 'default') {
+			return $this->_getTitle('default');
+		}
+		return '';
 	}
 
 	/**
@@ -382,11 +350,11 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return string | boolean
 	 */
 	public function getRedirectUrl() {
-		if (!isset($this->_config['redirect'])) {
+		if ($this->_config->redirect === null) {
 			return false;
 		}
 
-		$url = $this->_config['redirect'];
+		$url = $this->_config->redirect;
 		if (strpos($url, '/') !== 0) {
 			$url = rtrim($this->getRequest()->getRawRequestUri(false), '/') .'/'. $url;
 		}
@@ -460,23 +428,23 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	}
 
 	/**
-	 * @todo сделать для тега <title/> в структуре атрибут mode, что бы можно было
-	 * @todo задавать несколько разных заголовков. И если какого-то нет, возвращать без @mode
+	 * @param string $mode
 	 * @return string
 	 */
-	final public function getTitle() {
-		if ($this->_title === null) {
-			$this->_title = $this->_getTitle();
+	final public function getTitle($mode = 'default') {
+		if (!array_key_exists($mode, $this->_titles)) {
+			$this->_titles[$mode] = $this->_getTitle($mode);
 		}
-		return $this->_title;
+		return $this->_titles[$mode];
 	}
 
 	/**
 	 * @param string $value
+	 * @param string $mode
 	 * @return CManager_Controller_Page
 	 */
-	final public function setTitle($value) {
-		$this->_title = $value;
+	final public function setTitle($value, $mode = 'default') {
+		$this->_titles[$mode] = $value;
 		return $this;
 	}
 
