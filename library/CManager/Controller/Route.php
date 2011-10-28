@@ -75,16 +75,19 @@ class CManager_Controller_Route {
 		}
 		$url = $this->_route;
 		foreach($this->_vars as $var) {
-			if (isset($vars[$var['name']])) {
-				// если переменная передана, то подставляем ее значение
-				$url = str_replace('$' . $var['name'], $vars[$var['name']], $url);
+			if (isset($vars[$var->name])) {
+				// если переменная передана, то подставляем ее значение (предварительно провалидировав)
+				if (!preg_match('~^' . str_replace('~', '\\~', $var->rule) . '$~', $vars[$var->name])) {
+					throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' is not valid");
+				}
+				$url = str_replace('(:' . $var->name . ')', $vars[$var->name], $url);
 				// удаляем переменную из списка. нужно что бы потом безпроблемно сгенерировать REQUEST_QUERY
-				unset($vars[$var['name']]);
-			} else if (isset($var['default'])) {
+				unset($vars[$var->name]);
+			} else if ($var->default !== null) {
 				// если переменная не передана, но у нее есть значение по-умолчанию, то подставляем его
-				$url = str_replace('$' . $var['name'], $vars[$var['name']], $url);
+				$url = str_replace('(:' . $var->name . ')', $var->default, $url);
  			} else {
-				throw new CManager_Controller_Route_Exception('Not all required parameters passed');
+				throw new CManager_Controller_Route_Exception("Not all required parameters for route '{$this->getPageConfig()->name}' passed");
 			}
 		}
 		if ($quoteQueryParams) {
@@ -148,18 +151,19 @@ class CManager_Controller_Route {
 
 	/**
 	 * @param string $value
-	 * @param array $config
+	 * @param CManager_Controller_Router_Config_RouteVar $config
 	 * @return mixed
 	 */
-	protected function _prepareVariable($value, array $config) {
+	protected function _prepareVariable($value, CManager_Controller_Router_Config_RouteVar $config) {
 		$value = urldecode($value);
-		if (empty($value) && isset($config['default'])) {
-			$value = $config['default'];
+		if (empty($value) && $config->default !== null) {
+			$value = $config->default;
 		}
-		if (isset($config['pattern'])) {
-			if (preg_match('~^' . str_replace('~', '\\~', $config['pattern']) . '$~', $value, $match)) {
+		if ($config->pattern !== null) {
+			if (preg_match('~^' . str_replace('~', '\\~', $config->pattern) . '$~', $value, $match)) {
+				unset($match[0]);
 				if (count($match) > 1) {
-					$value = $match;
+					$value = array_values($match);
 				} else {
 					$value = $match[1];
 				}
@@ -168,10 +172,10 @@ class CManager_Controller_Route {
 			}
 		}
 
-		if (isset($config['explode'])) {
-			$value = explode($config['explode'], $value);
+		if ($config->explode !== null) {
+			$value = explode($config->explode, $value);
 		}
-		$namespace = isset($config['namespace'])? $config['namespace']: 'string';
+		$namespace = $config->namespace !== null? $config->namespace: 'string';
 		switch(true) {
 			case $namespace == 'int':
 				if (is_array($value)) {
@@ -198,7 +202,7 @@ class CManager_Controller_Route {
 			case $value === null:
 				break;
 			default:
-				throw new CManager_Controller_Route_Exception("Namespace {$config['namespace']} not defined");
+				throw new CManager_Controller_Route_Exception("Namespace {$namespace} not defined");
 		}
 
 		return $value;

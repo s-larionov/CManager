@@ -332,7 +332,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return string
 	 */
 	protected function _getTitle($mode = 'default') {
-		// TODO: вытаскивать титл из стркутуры
 		foreach($this->_config->title as $title) {
 			if ($title->mode == $mode) {
 				return (string) $title->value;

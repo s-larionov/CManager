@@ -59,9 +59,12 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 */
 	public function generateUrl($pageName, array $variables = array()) {
 		if (!isset($this->_routes[$pageName])) {
-			$url = "#{$pageName}#" . (count($variables) > 0? '?': '');
-			foreach($variables as $name => $value) {
-				$url .= urlencode($name) . '=' . urlencode($value) . '&amp;';
+			$url = '#' . $pageName;
+			foreach($variables as $name => &$value) {
+				$value = urlencode($name) . ($value !== ''? '=' . urlencode($value): '');
+			}
+			if (count($variables) > 0) {
+				$url .= '?' . implode('&amp;', $variables);
 			}
 			return $url;
 		}
@@ -117,10 +120,9 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	public function createPage($pageName, array $variables = array()) {
 		$routes = $this->getRoutes();
 		if (isset($routes[$pageName])) {
-			$code = (int) $routes[$pageName]->getPageConfig()->error_code;
 			$pageConfig = $routes[$pageName]->getPageConfig();
 			$classPage = 'CManager_Controller_Page';
-			if (isset($pageConfig->namespace)) {
+			if ($pageConfig->namespace !== null) {
 				if (!class_exists($pageConfig->namespace)) {
 					throw new CManager_Controller_Router_Exception("Class {$pageConfig->namespace} not defined");
 				}
