@@ -120,7 +120,8 @@
 			<xs:attribute type="xs:string" name="rule" use="required"/>
 			<xs:attribute type="xs:string" name="explode" use="optional"/>
 			<xs:attribute type="xs:string" name="default" use="optional"/>
-			<xs:attribute type="xs:string" name="namespace" use="optional">
+			<xs:attribute type="xs:string" name="namespace" use="optional"/>
+<!--
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
 						<xs:enumeration value="string"/>
@@ -132,6 +133,7 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
+-->
 		</xs:complexType>
 	</xs:element>
 
