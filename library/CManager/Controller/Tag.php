@@ -3,7 +3,6 @@
 class CManager_Controller_Tag {
 	const MODE_NORMAL		= 'normal';
 	const MODE_BACKGROUND	= 'background';
-	const MODE_ACTION		= 'action';
 
 	/**
 	 * @var string
@@ -42,10 +41,7 @@ class CManager_Controller_Tag {
 		$this->_name		= $name;
 		$this->_namespace	= $namespace;
 		$this->_mode		= $mode;
-
-		foreach($params as $param) {
-			$this->_params[$param->name] = $param;
-		}
+		$this->_setParams($params);
 	}
 
 	/**
@@ -73,30 +69,52 @@ class CManager_Controller_Tag {
 	/**
 	 * @param string $key
 	 * @param mixed $default
-	 * @return mixed
+	 * @return string|array
 	 */
 	public function getParam($key, $default = null) {
 		if (!array_key_exists($key, $this->_params)) {
 			return $default;
 		}
-		$param = $this->_params[$key];
-		if (count($param->param) > 0) {
-			return $this->_paramToArray($param);
+		return $this->_params[$key];
+	}
+
+	protected function _setParams(array $params) {
+		foreach($params as $param) {
+			$name = $param->name;
+			$value = $this->_prepareParam($param);
+			if (array_key_exists($name, $this->_params)) {
+				if (!is_array($this->_params[$name]) || !array_key_exists(0, $this->_params[$name])) {
+					$this->_params[$name] = array($this->_params[$name]);
+				}
+				$this->_params[$name][] = $value;
+			} else {
+				$this->_params[$name] = $value;
+			}
 		}
-		return $param->value;
 	}
 
 	/**
 	 * @param CManager_Controller_Router_Config_TagParam $param
-	 * @return array
+	 * @return array|string
 	 */
-	protected function _paramToArray(CManager_Controller_Router_Config_TagParam $param) {
+	protected function _prepareParam(CManager_Controller_Router_Config_TagParam $param) {
 		$result = array();
+		if (count($param->param) == 0) {
+			return $param->value;
+		}
 		foreach($param->param as $subParam) {
 			if (count($subParam->param) > 0) {
-				$result[$subParam->name] = $this->_paramToArray($subParam);
+				$value = $this->_prepareParam($subParam);
 			} else {
-				$result[$subParam->name] = $subParam->value;
+				$value = $subParam->value;
+			}
+			if (array_key_exists($subParam->name, $result)) {
+				if (!is_array($result[$subParam->name]) || !array_key_exists(0, $result[$subParam->name])) {
+					$result[$subParam->name] = array($result[$subParam->name]);
+				}
+				$result[$subParam->name][] = $value;
+			} else {
+				$result[$subParam->name] = $value;
 			}
 		}
 		return $result;
