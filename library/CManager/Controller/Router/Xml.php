@@ -33,7 +33,6 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 			throw new CManager_Controller_Router_Exception("File '{$this->_xmlFile}' not found");
 		}
 
-/*		$a = microtime(true);*/
 		set_error_handler(array($this, '_loadFileErrorHandler')); // Warnings and errors are suppressed
 		$xml = simplexml_load_file($this->_xmlFile);
 		restore_error_handler();
@@ -45,18 +44,6 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 
 		$structure = new CManager_Controller_Router_Config_Structure(
 				$xml, new CManager_Controller_Router_Config_Adapter_Xml());
-/*		$a = microtime(true) - $a;
-		var_dump(CManager_Number::format($a, 5));
-
-		$a = microtime(true);
-		$str = serialize($structure);
-		$a = microtime(true) - $a;
-		var_dump(CManager_Number::format($a, 5));
-
-		$a = microtime(true);
-		$structure = unserialize($str);
-		$a = microtime(true) - $a;
-		var_dump(CManager_Number::format($a, 5));*/
 
 		return $structure;
 	}

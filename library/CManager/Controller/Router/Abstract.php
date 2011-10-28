@@ -168,7 +168,7 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 */
 	public function getRoutes() {
 		if ($this->_routes === null) {
-			$structure = $this->_getStructure();
+			$structure = $this->getStructure();
 			if (!$structure->page || !is_array($structure->page)) {
 				throw new CManager_Controller_Router_Exception("Wrong router config data");
 			}

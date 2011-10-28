@@ -1,6 +1,6 @@
 <?php
 
-abstract class CManager_Controller_Router_Config_Abstract /*implements Serializable*/ {
+abstract class CManager_Controller_Router_Config_Abstract {
 	const PASS_ATTRIBUTE		= 'pass';
 
 	protected $_name = '';
@@ -40,13 +40,6 @@ abstract class CManager_Controller_Router_Config_Abstract /*implements Serializa
 	 */
 	protected $_adapter = null;
 
-//	/**
-//	 * @return array
-//	 */
-//	public function __sleep() {
-//		return array('_data', '_parent');
-//	}
-
 	/**
 	 * @param mixed $config
 	 * @param CManager_Controller_Router_Config_Adapter_Abstract $adapter
@@ -81,6 +74,7 @@ abstract class CManager_Controller_Router_Config_Abstract /*implements Serializa
 			if (!$config['single']) {
 				throw new CManager_Controller_Router_Config_Exception("@{$field} can't be multiple in {$this}");
 			}
+
 			$this->_set($field, $this->_createValue($value, $config, true));
 			$this->_attributes[$field] = $config;
 		}
@@ -291,7 +285,8 @@ abstract class CManager_Controller_Router_Config_Abstract /*implements Serializa
 		switch(true) {
 			case strpos($config['namespace'], 'enum') === 0:
 				$enumValues = explode(',', substr($config['namespace'], 5, -1));
-				if (!in_array((string) $value, $enumValues)) {
+				$value = (string) $value;
+				if (!in_array($value, $enumValues)) {
 					throw new CManager_Controller_Router_Config_Exception("Value '{$value}' not in {$config['namespace']}");
 				}
 				break;
@@ -365,6 +360,7 @@ abstract class CManager_Controller_Router_Config_Abstract /*implements Serializa
 	}
 
 	/**
+	 * НЕ РАБОТАЕТ ПОСЛЕ unserialize!!!
 	 * @return CManager_Controller_Router_Config_Abstract|null
 	 */
 	public function getParent() {
@@ -390,5 +386,28 @@ abstract class CManager_Controller_Router_Config_Abstract /*implements Serializa
 	public function __toString() {
 		$name = $this->name;
 		return $this->getName() . ($name !== null? "[{$name}]": '');
+	}
+
+	/**
+	 * @return array
+	 */
+	public function __sleep() {
+		return array('_data');
+	}
+
+	public function __wakeup() {
+		foreach($this->_data as &$item) {
+			if (is_array($item)) {
+				foreach($item as &$arrayItem) {
+					if ($item instanceof self) {
+						$arrayItem->setParent($this);
+					}
+				}
+				continue;
+			}
+			if ($item instanceof self) {
+				$item->setParent($this);
+			}
+		}
 	}
 }

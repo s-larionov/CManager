@@ -14,8 +14,8 @@ class CManager_Controller_Router_Config_Adapter_Xml extends CManager_Controller_
 	public function getAttribute($element, $attributeName) {
 		$value = $element->attributes()->$attributeName;
 		if ($attributeName === 'value' && $value === null) {
-			$value = $element;
-			if (trim((string) $element) === '') {
+			$value = trim((string) $element);
+			if ($value === '') {
 				$value = null;
 			}
 		}
