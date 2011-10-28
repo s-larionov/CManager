@@ -198,6 +198,9 @@ class CManager_Controller_Route {
 				break;
 			case class_exists($namespace) && $value !== null:
 				$value = new $namespace($value);
+				if (!($value instanceof CManager_Controller_Route_VarInterface) || !$value->isValidRouteVariable()) {
+					$value = null;
+				}
 				break;
 			case $value === null:
 				break;

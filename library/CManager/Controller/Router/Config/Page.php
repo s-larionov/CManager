@@ -14,7 +14,8 @@ class CManager_Controller_Router_Config_Page extends CManager_Controller_Router_
 		),
 		'namespace' => array(
 			'namespace' => 'string',
-			'required' => false
+			'required' => false,
+			'inherit' => true
 		),
 		'error_code' => array(
 			'namespace' => 'int',
