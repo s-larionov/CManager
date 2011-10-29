@@ -267,11 +267,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		} catch (CManager_Controller_Action_DoneException $e) {
 			return (string) $e;
 		} catch (Exception $e) {
-			if ($tag->mode === CManager_Controller_Tag::MODE_ACTION) {
-				throw $e;
-			} else {
-				$this->getResponse()->setException($e);
-			}
+			$this->getResponse()->setException($e);
 		}
 		return $out;
 	}

@@ -66,21 +66,27 @@ class CManager_Controller_Route {
 	 * Сгенерировать url на основе route и переданных параметров
 	 *
 	 * @param string[] $vars
-	 * @param bool $quoteQueryParams
+	 * @param bool $addQueryParams
 	 * @return string
 	 */
-	public function generateUrl(array $vars = array(), $quoteQueryParams = true) {
+	public function generateUrl(array $vars = array(), $addQueryParams = true) {
 		if (!is_array($vars)) {
 			throw new CManager_Controller_Route_Exception('First argument must be array of strings');
 		}
 		$url = $this->_route;
 		foreach($this->_vars as $var) {
 			if (isset($vars[$var->name])) {
+				// проверяем, если это объект и на соответствие интерфейсу
+				if (is_object($vars[$var->name]) && $vars[$var->name] instanceof CManager_Controller_Route_Var_Abstract) {
+					$value = $vars[$var->name]->getRawValue();
+				} else {
+					$value = (string) $vars[$var->name];
+				}
 				// если переменная передана, то подставляем ее значение (предварительно провалидировав)
-				if (!preg_match('~^' . str_replace('~', '\\~', $var->rule) . '$~', $vars[$var->name])) {
+				if (!preg_match('~^' . str_replace('~', '\\~', $var->rule) . '$~', $value)) {
 					throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' is not valid");
 				}
-				$url = str_replace('(:' . $var->name . ')', $vars[$var->name], $url);
+				$url = str_replace('(:' . $var->name . ')', $value, $url);
 				// удаляем переменную из списка. нужно что бы потом безпроблемно сгенерировать REQUEST_QUERY
 				unset($vars[$var->name]);
 			} else if ($var->default !== null) {
@@ -90,12 +96,10 @@ class CManager_Controller_Route {
 				throw new CManager_Controller_Route_Exception("Not all required parameters for route '{$this->getPageConfig()->name}' passed");
 			}
 		}
-		if ($quoteQueryParams) {
+		if ($addQueryParams && count($vars) > 0) {
 			foreach($vars as $name => &$var) {
 				$var = urlencode($name) . ($var !== ''? '=' . urlencode($var): '');
 			}
-		}
-		if (count($vars) > 0) {
 			$url .= '?' . implode('&amp;', $vars);
 		}
 		return $url;
@@ -151,10 +155,12 @@ class CManager_Controller_Route {
 
 	/**
 	 * @param string $value
+	 * @param string $rawValue
 	 * @param CManager_Controller_Router_Config_RouteVar $config
 	 * @return mixed
 	 */
 	protected function _prepareVariable($value, CManager_Controller_Router_Config_RouteVar $config) {
+		$rawValue = $value;
 		$value = urldecode($value);
 		if (empty($value) && $config->default !== null) {
 			$value = $config->default;
@@ -198,7 +204,8 @@ class CManager_Controller_Route {
 				break;
 			case class_exists($namespace) && $value !== null:
 				$value = new $namespace($value);
-				if (!($value instanceof CManager_Controller_Route_VarInterface) || !$value->isValidRouteVariable()) {
+				$value->setRawValue($rawValue);
+				if (!($value instanceof CManager_Controller_Route_Var_Abstract) || !$value->isValidRouteVariable()) {
 					$value = null;
 				}
 				break;

@@ -3,7 +3,7 @@
 class CManager_Controller_Router_Config_Permission extends CManager_Controller_Router_Config_Abstract {
 	protected $_name = 'permission';
 	protected $_attributes = array(
-		'role' => array(
+		'name' => array(
 			'namespace' => 'string',
 			'required' => true
 		),

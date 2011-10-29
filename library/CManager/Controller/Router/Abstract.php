@@ -58,10 +58,11 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	/**
 	 * @param string $pageName
 	 * @param string[] $variables
+	 * @param boolean $addQueryParams
 	 * @return string
 	 * @throws CManager_Controller_Route_Exception
 	 */
-	public function generateUrl($pageName, array $variables = array()) {
+	public function generateUrl($pageName, array $variables = array(), $addQueryParams = true) {
 		if (!isset($this->_routes[$pageName])) {
 			$url = '#' . $pageName;
 			foreach($variables as $name => &$value) {
@@ -72,7 +73,7 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 			}
 			return $url;
 		}
-		return $this->_routes[$pageName]->generateUrl($variables);
+		return $this->_routes[$pageName]->generateUrl($variables, $addQueryParams);
 	}
 
 	/*
@@ -164,15 +165,21 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	}
 
 	/**
-	 * @return CManager_Controller_Route[]
+	 * @return CManager_Controller_Route[]|CManager_Controller_Route
 	 */
-	public function getRoutes() {
+	public function getRoutes($name = null) {
 		if ($this->_routes === null) {
 			$structure = $this->getStructure();
 			if (!$structure->page || !is_array($structure->page)) {
 				throw new CManager_Controller_Router_Exception("Wrong router config data");
 			}
 			$this->_routes = $this->_generateRoutes($structure->page);
+		}
+		if ($name !== null) {
+			if (array_key_exists($name, $this->_routes)) {
+				return $this->_routes[$name];
+			}
+			return null;
 		}
 		return $this->_routes;
 	}

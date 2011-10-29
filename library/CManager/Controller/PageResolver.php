@@ -38,6 +38,17 @@ class CManager_Controller_PageResolver {
 			}
 		}
 
+		if ($path == '/') {
+			foreach($routes as $pageName => $route) {
+				if ($route->getPageConfig()->start === true) {
+					$this->getRouter()->getResponse()
+							->setRedirect($route->generateUrl(), 301)
+							->sendResponse();
+					exit;
+				}
+			}
+		}
+
 		return $this->getRouter()->createPageByCode(404);
 	}
 }

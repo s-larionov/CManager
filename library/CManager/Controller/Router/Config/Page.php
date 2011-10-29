@@ -30,6 +30,11 @@ class CManager_Controller_Router_Config_Page extends CManager_Controller_Router_
 		'redirect' => array(
 			'namespace' => 'string',
 			'required' => false
+		),
+		'start' => array(
+			'namespace' => 'boolean',
+			'required' => false,
+			'default' => false
 		)
 	);
 	protected $_children = array(
