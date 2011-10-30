@@ -1,8 +1,9 @@
 <?php
 
 abstract class CManager_Structure_Abstract {
-	const PASS_ATTRIBUTE		= 'pass';
-	const NAMESPACE_PREFIX		= '';
+	const PASS_ATTRIBUTE			= 'pass';
+	const NAMESPACE_PREFIX			= '';
+	const MODE_LOAD_ALL_ATTRIBUTES	= '__ALL__';
 
 	protected $_name = '';
 	/**
@@ -65,6 +66,10 @@ abstract class CManager_Structure_Abstract {
 	 * @throws CManager_Structure_Exception
 	 */
 	protected function _parseAttributes($element) {
+		if ($loadAllAttributes = array_key_exists(self::MODE_LOAD_ALL_ATTRIBUTES, $this->_attributes)) {
+			unset($this->_attributes[self::MODE_LOAD_ALL_ATTRIBUTES]);
+		}
+
 		foreach ($this->_attributes as $field => $config) {
 			$config	= $this->_extendConfig($config);
 			$value	= $this->getAdapter()->getAttribute($element, $field);
@@ -83,6 +88,22 @@ abstract class CManager_Structure_Abstract {
 		// реализовываем наследование
 		foreach($this->_attributes as $field => $config) {
 			$this->_tryInheritAttribute($field, $config);
+		}
+
+		// загружаем неописанные аттрибуты, если указано загружать все.
+		if ($loadAllAttributes) {
+			$config	= $this->_extendConfig(array(
+				'namespace' => 'string',
+				'single' => true
+			));
+			foreach($this->getAdapter()->getListAttributes($element) as $field) {
+				if (array_key_exists($field, $this->_data)) {
+					continue;
+				}
+				$value = $this->getAdapter()->getAttribute($element, $field);
+				$this->_set($field, $this->_createValue($value, $config, true));
+				$this->_attributes[$field] = $config;
+			}
 		}
 	}
 

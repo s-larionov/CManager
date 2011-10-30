@@ -23,7 +23,7 @@ class CManager_Controller_Router_Config_Tag extends CManager_Controller_Router_C
 	);
 	protected $_children = array(
 		'param' => array(
-			'namespace' => 'TagParam',
+			'namespace' => self::NAMESPACE_TAG_PARAM,
 			'required' => false,
 			'single' => false
 		)

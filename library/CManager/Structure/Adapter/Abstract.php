@@ -12,6 +12,13 @@ abstract class CManager_Structure_Adapter_Abstract {
 	/**
 	 * @abstract
 	 * @param mixed $element
+	 * @return string[]
+	 */
+	abstract public function getListAttributes($element);
+
+	/**
+	 * @abstract
+	 * @param mixed $element
 	 * @param string $childName
 	 * @return array
 	 */

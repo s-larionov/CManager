@@ -10,6 +10,7 @@ class CManager_Controller_Router_Config_PageNav extends CManager_Controller_Rout
 		'value' => array(
 			'namespace' => 'string',
 			'required' => false
-		)
+		),
+		self::MODE_LOAD_ALL_ATTRIBUTES => true
 	);
 }

@@ -10,17 +10,17 @@ class CManager_Controller_Router_Config_Structure extends CManager_Controller_Ro
 	);
 	protected $_children = array(
 		'permission' => array(
-			'namespace' => 'Permission',
+			'namespace' => self::NAMESPACE_PERMISSION,
 			'required' => false,
 			'single' => false
 		),
 		'tag' => array(
-			'namespace' => 'Tag',
+			'namespace' => self::NAMESPACE_TAG,
 			'required' => false,
 			'single' => false
 		),
 		'page' => array(
-			'namespace' => 'Page',
+			'namespace' => self::NAMESPACE_PAGE,
 			'required' => true,
 			'single' => false
 		)

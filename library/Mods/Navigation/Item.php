@@ -150,7 +150,7 @@ class Mods_Navigation_Item {
 	public function insertSubItem(Mods_Navigation_Item $item, $index) {
 		$item->setParent($this);
 		if ($index >= 0 && array_key_exists($index, $this->_subItems)) {
-			$this->_subItems = array_splice($this->_subItems, $index, 0, $item);
+			array_splice($this->_subItems, $index, 0, array($item));
 			return $this;
 		}
 		$this->addSubItem($item);

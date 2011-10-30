@@ -89,12 +89,13 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 				continue;
 			}
 
-			$navItem = new Mods_Navigation_Item($navigationTag->name, array(
-				'name'		=> $pageConfig->name,
-				'title'		=> $titles,
-				'url'		=> $config['url'],
-				'current'	=> $config['isCurrent']
-			));
+			$navItem = new Mods_Navigation_Item($navigationTag->name,
+				array_merge($navigationTag->toArray(), array(
+					'name'		=> $pageConfig->name,
+					'title'		=> $titles,
+					'url'		=> $config['url'],
+					'current'	=> $config['isCurrent']
+				)));
 
 			if ($navigation === null) {
 				if (!array_key_exists($navigationTag->name, static::$_navigations) || !(static::$_navigations[$navigationTag->name] instanceof Mods_Navigation_Item)) {

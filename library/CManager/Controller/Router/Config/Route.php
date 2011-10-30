@@ -10,7 +10,7 @@ class CManager_Controller_Router_Config_Route extends CManager_Controller_Router
 	);
 	protected $_children = array(
 		'var' => array(
-			'namespace' => 'RouteVar',
+			'namespace' => self::NAMESPACE_ROUTE_VAR,
 			'required' => false,
 			'single' => false
 		)

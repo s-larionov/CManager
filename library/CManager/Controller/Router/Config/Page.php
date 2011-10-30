@@ -39,41 +39,41 @@ class CManager_Controller_Router_Config_Page extends CManager_Controller_Router_
 	);
 	protected $_children = array(
 		'tag_exclusion' => array(
-			'namespace' => 'TagExclusion',
+			'namespace' => self::NAMESPACE_TAG_EXCLUSION,
 			'required' => false,
 			'single' => false,
 			'inherit' => true
 		),
 		'route' => array(
-			'namespace' => 'Route',
+			'namespace' => self::NAMESPACE_ROUTE,
 			'required' => true,
 			'single' => true
 		),
 		'title' => array(
-			'namespace' => 'PageTitle',
+			'namespace' => self::NAMESPACE_PAGE_TITLE,
 			'required' => false,
 			'single' => false
 		),
 		'tag' => array(
-			'namespace' => 'Tag',
+			'namespace' => self::NAMESPACE_TAG,
 			'required' => false,
 			'single' => false,
 			'inherit' => true,
 			'exclusion' => 'tag_exclusion'
 		),
 		'permission' => array(
-			'namespace' => 'Permission',
+			'namespace' => self::NAMESPACE_PERMISSION,
 			'required' => false,
 			'single' => false,
 			'inherit' => true
 		),
 		'page' => array(
-			'namespace' => 'Page',
+			'namespace' => self::NAMESPACE_PAGE,
 			'required' => false,
 			'single' => false
 		),
 		'nav' => array(
-			'namespace' => 'PageNav',
+			'namespace' => self::NAMESPACE_PAGE_NAVIGATION,
 			'required' => false,
 			'single' => false
 		)
