@@ -128,9 +128,13 @@ class Mods_Navigation_Item {
 	 * @param Mods_Navigation_Item $item
 	 * @return Mods_Navigation_Item
 	 */
-	public function addSubItem(Mods_Navigation_Item $item) {
+	public function addSubItem(Mods_Navigation_Item $item, $beforeIndex = -1) {
 		$item->setParent($this);
-		$this->_subItems[] = $item;
+		if ($beforeIndex >= 0 && array_key_exists($beforeIndex, $this->_subItems)) {
+			$this->_subItems = array_splice($this->_subItems, $beforeIndex, 0, $item);
+		} else {
+			$this->_subItems[] = $item;
+		}
 		return $this;
 	}
 
