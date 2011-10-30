@@ -171,9 +171,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 				case 'background':
 					$mode = CManager_Controller_Tag::MODE_BACKGROUND;
 					break;
-				case 'action':
-					$mode = CManager_Controller_Tag::MODE_ACTION;
-					break;
 				case 'normal':
 				default:
 					$mode = CManager_Controller_Tag::MODE_NORMAL;

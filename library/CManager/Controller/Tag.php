@@ -153,11 +153,6 @@ class CManager_Controller_Tag {
 	public function run($request = null, $response = null) {
 		if (!$this->isDisabled()) {
 			$controller = $this->getController($request, $response);
-
-			if ($controller instanceof CManager_Controller_Action_Cache) {
-				$controller->checkCache();
-			}
-
 			return $controller->run();
 		}
 		return '';
