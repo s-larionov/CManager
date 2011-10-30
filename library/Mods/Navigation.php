@@ -4,7 +4,35 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 	/**
 	 * @var Mods_Navigation_Item[]
 	 */
-	protected static $_navigations = null;
+	protected static $_navigations	= null;
+	/**
+	 * @var string
+	 */
+	protected static $_currentUrl	= null;
+
+	/**
+	 * @static
+	 * @return CManager_Controller_Router_Abstract
+	 */
+	protected  static function _getRouter() {
+		static $router = null;
+		if ($router === null) {
+			$router = CManager_Registry::getFrontController()->getRouter();
+		}
+		return $router;
+	}
+
+	/**
+	 * @static
+	 * @return CManager_Controller_Page
+	 */
+	protected  static function _getCurrentPage() {
+		static $page = null;
+		if ($page === null) {
+			$page = self::_getRouter()->getPage();
+		}
+		return $page;
+	}
 
 	public function run() {
 		$xml	= $this->getNavigation('main')->toXml();
@@ -16,11 +44,16 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 	/**
 	 * @static
 	 * @param string $name
+	 * @param bool $fromCurrentPage
 	 * @return Mods_Navigation_Item
 	 */
-	public static function getNavigation($name) {
+	public static function getNavigation($name, $fromCurrentPage = false) {
 		if (static::$_navigations === null) {
-			static::_createNavigations();
+			if ($fromCurrentPage) {
+				static::_createNavigations(self::_getCurrentPage()->getStructure());
+			} else {
+				static::_createNavigations();
+			}
 		}
 
 		if (array_key_exists($name, static::$_navigations) && static::$_navigations[$name] instanceof Mods_Navigation_Item) {
@@ -35,12 +68,11 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 	 * @static
 	 * @return void
 	 */
-	protected static function _createNavigations() {
-		$structure = CManager_Registry::getFrontController()->getRouter()->getStructure();
-
-		$router		= CManager_Registry::getFrontController()->getRouter();
-		$page		= $router->getPage();
-		$currentUrl	= $page->getRoute()->generateUrl($page->getVariables(), false);
+	protected static function _createNavigations(CManager_Controller_Router_Config_Abstract $structure = null) {
+		$router = self::_getRouter();
+		if ($structure === null) {
+			$structure = $router->getStructure();
+		}
 
 		static::$_navigations = array();
 		foreach($structure->page as $page) {
@@ -49,11 +81,27 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 			} catch (CManager_Controller_Route_Exception $e) {
 				continue;
 			}
-			static::_appendPage($page, array(
+			static::_tryAppendPage($page, array(
 				'url'		=> $url,
-				'isCurrent'	=> $currentUrl == $url,
-				'currentUrl'=> $currentUrl
+				'isCurrent'	=> $page->name == self::_getCurrentPage()->getStructure()->name
 			));
+		}
+	}
+
+	/**
+	 * @static
+	 * @param CManager_Controller_Router_Config_Page $pageConfig
+	 * @param Mods_Navigation_Item|null $navigation
+	 * @return void
+	 */
+	protected static function _isHerePage(CManager_Controller_Router_Config_Page $pageConfig,
+										  Mods_Navigation_Item $navigation = null) {
+		foreach($pageConfig->page as $page) {
+			if (self::_getCurrentPage()->getStructure()->name == $pageConfig->name) {
+				$navigation->here = true;
+				return;
+			}
+			self::_isHerePage($page, $navigation);
 		}
 	}
 
@@ -64,18 +112,21 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 	 * @param Mods_Navigation_Item|null $navigation
 	 * @return void
 	 */
-	protected static function _appendPage(CManager_Controller_Router_Config_Page $pageConfig,
+	protected static function _tryAppendPage(CManager_Controller_Router_Config_Page $pageConfig,
 										  array $config,
 										  Mods_Navigation_Item $navigation = null) {
 		if (!static::_allowPermission($pageConfig->permission)
 				|| !isset($config['url'])
-				|| !isset($config['currentUrl'])
 				|| !isset($config['isCurrent'])) {
 			return;
 		}
 
 		$navigationTags = $pageConfig->nav;
-		if (count($navigationTags) == 0) {
+		if (empty($navigationTags) || $navigation !== null) {
+			// определяем находится ли текущая страница внутри этой ветки навигации
+			static::_isHerePage($pageConfig, $navigation);
+		}
+		if (empty($navigationTags)) {
 			return;
 		}
 
@@ -108,14 +159,13 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 
 			foreach($pageConfig->page as $page) {
 				try {
-					$url = CManager_Registry::getFrontController()->getRouter()->generateUrl($page->name);
+					$url = self::_getRouter()->generateUrl($page->name);
 				} catch (CManager_Controller_Route_Exception $e) {
 					continue;
 				}
-				static::_appendPage($page, array(
+				static::_tryAppendPage($page, array(
 					'url'		=> $url,
-					'isCurrent'	=> $config['currentUrl'] == $url,
-					'currentUrl'=> $config['currentUrl']
+					'isCurrent'	=> $page->name == self::_getCurrentPage()->getStructure()->name
 				), $navItem);
 			}
 		}

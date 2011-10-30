@@ -500,4 +500,11 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		$response->setHttpResponseCode($this->getCode());
 		$response->setHeader('Content-Type', $this->getContenttype());
 	}
+
+	/**
+	 * @return CManager_Controller_Router_Config_Page
+	 */
+	public function getStructure() {
+		return $this->getRoute()->getPageConfig();
+	}
 }

@@ -192,6 +192,9 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	protected function _generateRoutes(array $pages, CManager_Controller_Route $parentRoute = null) {
 		$routes = array();
 		foreach($pages as $page) {
+			if (array_key_exists($page->name, $routes)) {
+				throw new CManager_Controller_Router_Exception("Page '{$page->name}' already exists in router");
+			}
 			$routes[$page->name] = $this->_createRoute($page, $parentRoute);
 			if (is_array($page->page)) {
 				$routes = array_merge($routes, $this->_generateRoutes($page->page, $routes[$page->name]));
