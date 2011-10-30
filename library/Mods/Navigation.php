@@ -8,7 +8,6 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 
 	public function run() {
 		$xml	= $this->getNavigation('main')->toXml();
-		echo '<p class="g-mt1 g-mb0">' . nl2br(htmlspecialchars($xml)) . '</p>';
 		$xsl	= $this->getParam('xsl');
 		$params	= array();
 		$this->sendContent(CManager_Dom_Document::xslTransformSource($xsl, $xml, $params));
