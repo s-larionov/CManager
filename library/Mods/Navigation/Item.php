@@ -27,10 +27,10 @@ class Mods_Navigation_Item {
 	 */
 	public function __construct($navigationName, array $config) {
 		$this->_isRequired($config, array('name', 'title', 'url'));
+		$this->_navigationName = (string) $navigationName;
 		foreach($config as $name => $value) {
 			$this->set($name, $value);
 		}
-		$this->_navigationName = (string) $navigationName;
 	}
 
 	/**
@@ -71,8 +71,8 @@ class Mods_Navigation_Item {
 					);
 				} else {
 					foreach($value as &$title) {
-						if (!isset($title['value'])) {
-							return;
+						if (!array_key_exists('value', $title)) {
+							continue;
 						}
 						if (isset($title['mode'])) {
 							$title = new Mods_Navigation_ItemTitle($title['value'], $title['mode']);
@@ -93,6 +93,10 @@ class Mods_Navigation_Item {
 		}
 
 		$this->_data[$name] = $value;
+		if ($this->_navigationName == 'right') {
+//			var_dump($name);
+//			var_dump($value);
+		}
 		return $this;
 	}
 
@@ -246,6 +250,9 @@ class Mods_Navigation_Item {
 			unset($attributes['here']);
 		}
 
+		if (!isset($this->_data['title'])) {
+			var_dump($this->_data);
+		}
 		return CManager_Helper_Xml::parse('navigation', array(
 			'titles' => $this->_data['title'],
 			'items' => $this->getSubItems()
