@@ -103,7 +103,7 @@ abstract class CManager_Controller_Response_Abstract {
 	 *
 	 * @param string $url
 	 * @param int $code
-	 * @return Zend_Controller_Response_Abstract
+	 * @return CManager_Controller_Response_Abstract
 	 */
 	public function setRedirect($url, $code = 302) {
 		$this->canSendHeaders(true);

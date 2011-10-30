@@ -242,6 +242,9 @@ class Mods_Navigation_Item {
 		if (isset($attributes['current']) && !$attributes['current']) {
 			unset($attributes['current']);
 		}
+		if (isset($attributes['here']) && !$attributes['here']) {
+			unset($attributes['here']);
+		}
 
 		return CManager_Helper_Xml::parse('navigation', array(
 			'titles' => $this->_data['title'],
