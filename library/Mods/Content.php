@@ -12,7 +12,7 @@ class Mods_Content extends CManager_Controller_Action_Abstract {
 			$dirs = './content';
 		}
 
-		$file = CManager_File::getFullPath($this->getParam('file'), $dirs, false);
+		$file = CManager_Helper_File::getFullPath($this->getParam('file'), $dirs, false);
 
 		if ($file === null) {
 			return;

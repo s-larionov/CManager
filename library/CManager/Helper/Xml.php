@@ -1,6 +1,6 @@
 <?php
 
-class CManager_Xml {
+class CManager_Helper_Xml {
 	const CRLF = "\n";
 
 	/**
@@ -10,7 +10,6 @@ class CManager_Xml {
 	 * @return string                _Xml-строка
 	 */
 	public static function parse($element, $value, array $elementAttrs = array()) {
-//		timer::start('toxml' . $element);
 		switch (true) {
 			case is_numeric($value):
 			case empty($value):
@@ -21,6 +20,9 @@ class CManager_Xml {
 				break;
 			case is_array($value):
 				$value = self::_parseArray($value);
+				break;
+			case is_object($value) && is_callable(array($value, 'toXml')):
+				return $value->toXml();
 				break;
 			default:
 				$value = '<![CDATA['. $value .']]>';
@@ -55,7 +57,7 @@ class CManager_Xml {
 	*/
 	protected static function _parseArray(array $array, $rowElementName = 'row', $keysAsElements = true, $elementAttributes = array()) {
 		$xml = '';
-		$keysAsElements	= !($keysAsElements) || self::_isNumberedArray($array)? false: true;
+		$keysAsElements	= !($keysAsElements) || CManager_Helper_Array::isNumberedArray($array)? false: true;
 		foreach($array as $key => $row) {
 			$elementAttributesValues = array();
 			if (!empty($elementAttributes) && is_array($row)) {
@@ -77,20 +79,5 @@ class CManager_Xml {
 			}
 		}
 		return $xml;
-	}
-
-	/**
-	 * Проверяет являются ли ключи массива только числовыми.
-	 * @param array $array
-	 * @return bool true - не ассоциативный массив, false - ассоциативный
-	 */
-	protected static function _isNumberedArray(array $array) {
-		$keys = array_keys($array);
-		foreach ($keys as $key) {
-			if (!is_numeric($key)) {
-				return false;
-			}
-		}
-		return true;
 	}
 }

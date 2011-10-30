@@ -1,6 +1,6 @@
 <?php
 
-class CManager_File {
+class CManager_Helper_File {
 	/**
 	 * @param string $file
 	 * @param null|array|string|Zend_Config $dirs

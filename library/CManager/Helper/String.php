@@ -1,6 +1,6 @@
 <?php
 
-class CManager_String {
+class CManager_Helper_String {
 	/**
 	* Склонение кол-венных сущ.
 	*

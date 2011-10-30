@@ -116,13 +116,13 @@ class CManager_Date {
 				$return = $options['DIFF_DATE_TPL_YESTERDAY'];
 				break;
 			case $diff < 7 && ($options['DIFF_DATE_TPL_DAYS_AGO'] != $options['DIFF_DATE_TPL_DEFAULT']):
-				$return = CManager_String::pluralFormParse($options['DIFF_DATE_TPL_DAYS_AGO'], $diff);
+				$return = CManager_Helper_String::pluralFormParse($options['DIFF_DATE_TPL_DAYS_AGO'], $diff);
 				break;
 			case $diff < 30 && ($options['DIFF_DATE_TPL_WEEKS_AGO'] != $options['DIFF_DATE_TPL_DEFAULT']):
-				$return = CManager_String::pluralFormParse($options['DIFF_DATE_TPL_WEEKS_AGO'], round($diff/7));
+				$return = CManager_Helper_String::pluralFormParse($options['DIFF_DATE_TPL_WEEKS_AGO'], round($diff/7));
 				break;
 			case $diff < 365 && ($options['DIFF_DATE_TPL_MONTHS_AGO'] != $options['DIFF_DATE_TPL_DEFAULT']):
-				$return = CManager_String::pluralFormParse($options['DIFF_DATE_TPL_MONTHS_AGO'], round($diff/30));
+				$return = CManager_Helper_String::pluralFormParse($options['DIFF_DATE_TPL_MONTHS_AGO'], round($diff/30));
 				break;
 			default:
 				$return = strftime($options['DIFF_DATE_TPL_DEFAULT'], $date1);

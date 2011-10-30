@@ -1,6 +1,6 @@
 <?php
 
-class CManager_Number {
+class CManager_Helper_Number {
 	/**
 	* Форматирование чисел
 	*

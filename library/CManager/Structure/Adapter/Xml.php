@@ -1,11 +1,6 @@
 <?php
 
-class CManager_Controller_Router_Config_Adapter_Xml extends CManager_Controller_Router_Config_Adapter_Abstract {
-	/**
-	 * @var SimpleXMLElement
-	 */
-	protected $_xml;
-
+class CManager_Structure_Adapter_Xml extends CManager_Structure_Adapter_Abstract {
 	/**
 	 * @param SimpleXMLElement $element
 	 * @param string $attributeName
@@ -25,10 +20,9 @@ class CManager_Controller_Router_Config_Adapter_Xml extends CManager_Controller_
 	/**
 	 * @param SimpleXMLElement $element
 	 * @param string $childName
-	 * @param boolean $includePass
 	 * @return array
 	 */
-	public function getChild($element, $childName, $includePass = false) {
+	public function getChild($element, $childName) {
 		$value = $element->$childName;
 		if (count($value) === 0) {
 			return null;

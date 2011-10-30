@@ -1,6 +1,6 @@
 <?php
 
-abstract class CManager_Controller_Router_Config_Adapter_Abstract {
+abstract class CManager_Structure_Adapter_Abstract {
 	/**
 	 * @abstract
 	 * @param mixed $element
