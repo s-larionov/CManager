@@ -17,6 +17,11 @@ class Mods_Navigation_Item {
 	protected $_subItems = array();
 
 	/**
+	 * @var Mods_Navigation_Item
+	 */
+	protected $_parent = null;
+
+	/**
 	 * @param string $navigationName
 	 * @param array $config
 	 */
@@ -28,6 +33,11 @@ class Mods_Navigation_Item {
 		$this->_navigationName = (string) $navigationName;
 	}
 
+	/**
+	 * @param array $array
+	 * @param array $fields
+	 * @throws Mods_Navigation_Item_Exception
+	 */
 	protected function _isRequired(array $array, array $fields) {
 		foreach($fields as $field) {
 			if (!array_key_exists($field, $array)) {
@@ -39,6 +49,7 @@ class Mods_Navigation_Item {
 	/**
 	 * @param string $name
 	 * @param mixed $value
+	 * @return Mods_Navigation_Item
 	 */
 	public function set($name, $value) {
 		// преобразование типов входных параметров
@@ -74,7 +85,15 @@ class Mods_Navigation_Item {
 			default:
 				$value = (string) $value;
 		}
+
+		if ($name == 'current') {
+			$this->here = $value;
+		} else if (($name == 'here') && $value === true && ($parent = $this->getParent())) {
+			$this->getParent()->here = $value;
+		}
+
 		$this->_data[$name] = $value;
+		return $this;
 	}
 
 	/**
@@ -110,6 +129,7 @@ class Mods_Navigation_Item {
 	 * @return Mods_Navigation_Item
 	 */
 	public function addSubItem(Mods_Navigation_Item $item) {
+		$item->setParent($this);
 		$this->_subItems[] = $item;
 		return $this;
 	}
@@ -156,14 +176,50 @@ class Mods_Navigation_Item {
 	}
 
 	/**
+	 * @return Mods_Navigation_Item|null
+	 */
+	public function getParent() {
+		return $this->_parent;
+	}
+
+	/**
+	 * @param Mods_Navigation_Item $parent
+	 * @return Mods_Navigation_Item
+	 */
+	public function setParent(Mods_Navigation_Item $parent) {
+		$this->_parent = $parent;
+		if ($this->isHere() === true) {
+			$this->_parent->here = true;
+		}
+		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isHere() {
+		if ($this->current === true || $this->here === true) {
+			return true;
+		}
+		foreach($this->_subItems as $item) {
+			if ($item->isHere()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function toXml() {
 		$attributes = $this->_data;
 		unset($attributes['title']);
-		if (isset($this->_data['current']) && !$this->_data['current']) {
-			unset($this->_data['current']);
+
+		if (isset($attributes['current']) && !$attributes['current']) {
+			unset($attributes['current']);
 		}
+
 		return CManager_Helper_Xml::parse('navigation', array(
 			'titles' => $this->_data['title'],
 			'items' => $this->getSubItems()
