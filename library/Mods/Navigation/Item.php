@@ -126,15 +126,34 @@ class Mods_Navigation_Item {
 
 	/**
 	 * @param Mods_Navigation_Item $item
+	 * @param string $before
 	 * @return Mods_Navigation_Item
 	 */
-	public function addSubItem(Mods_Navigation_Item $item, $beforeIndex = -1) {
+	public function addSubItem(Mods_Navigation_Item $item, $before = '') {
 		$item->setParent($this);
-		if ($beforeIndex >= 0 && array_key_exists($beforeIndex, $this->_subItems)) {
-			$this->_subItems = array_splice($this->_subItems, $beforeIndex, 0, $item);
-		} else {
-			$this->_subItems[] = $item;
+		if ($before != '') {
+			foreach($this->_subItems as $i => &$subItem) {
+				if ($subItem->name == $before) {
+					return $this->insertSubItem($item, $i);
+				}
+			}
 		}
+		$this->_subItems[] = $item;
+		return $this;
+	}
+
+	/**
+	 * @param Mods_Navigation_Item $item
+	 * @param int $index
+	 * @return Mods_Navigation_Item
+	 */
+	public function insertSubItem(Mods_Navigation_Item $item, $index) {
+		$item->setParent($this);
+		if ($index >= 0 && array_key_exists($index, $this->_subItems)) {
+			$this->_subItems = array_splice($this->_subItems, $index, 0, $item);
+			return $this;
+		}
+		$this->addSubItem($item);
 		return $this;
 	}
 
