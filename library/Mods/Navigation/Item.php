@@ -106,11 +106,10 @@ class Mods_Navigation_Item {
 	}
 
 	/**
-	 * @param string $name
 	 * @param Mods_Navigation_Item $item
 	 * @return Mods_Navigation_Item
 	 */
-	public function addSubItem($name, Mods_Navigation_Item $item) {
+	public function addSubItem(Mods_Navigation_Item $item) {
 		$this->_subItems[] = $item;
 		return $this;
 	}
@@ -127,6 +126,19 @@ class Mods_Navigation_Item {
 	 */
 	public function getSubItems() {
 		return $this->_subItems;
+	}
+
+	/**
+	 * @param string $name
+	 * @return Mods_Navigation_Item|null
+	 */
+	public function getSubItem($name) {
+		foreach($this->_subItems as $item) {
+			if ($item->name == $name) {
+				return $item;
+			}
+		}
+		return null;
 	}
 
 	/**

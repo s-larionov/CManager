@@ -100,9 +100,9 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 				if (!array_key_exists($navigationTag->name, static::$_navigations) || !(static::$_navigations[$navigationTag->name] instanceof Mods_Navigation_Item)) {
 					static::$_navigations[$navigationTag->name] = static::_createRootNavigation($navigationTag->name);
 				}
-				static::$_navigations[$navigationTag->name]->addSubItem($pageConfig->name, $navItem);
+				static::$_navigations[$navigationTag->name]->addSubItem($navItem);
 			} else {
-				$navigation->addSubItem($pageConfig->name, $navItem);
+				$navigation->addSubItem($navItem);
 			}
 
 			foreach($pageConfig->page as $page) {
