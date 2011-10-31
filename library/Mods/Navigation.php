@@ -35,7 +35,7 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 	}
 
 	public function run() {
-		$xml	= $this->getNavigation('main')->toXml();
+		$xml	= $this->getNavigation($this->getParam('name'))->toXml();
 		$xsl	= $this->getParam('xsl');
 		$params	= array();
 		$this->sendContent(CManager_Dom_Document::xslTransformSource($xsl, $xml, $params));
