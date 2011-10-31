@@ -155,7 +155,6 @@ class CManager_Controller_Route {
 
 	/**
 	 * @param string $value
-	 * @param string $rawValue
 	 * @param CManager_Controller_Router_Config_RouteVar $config
 	 * @return mixed
 	 */
