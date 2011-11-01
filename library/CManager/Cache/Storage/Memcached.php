@@ -1,6 +1,6 @@
 <?php
 
-class CManager_CacheStorage_Memcached extends CManager_CacheStorage_Abstract
+class CManager_Cache_Storage_Memcached extends CManager_Cache_Storage_Abstract
 {
 	/**
 	 * @var array
@@ -27,7 +27,7 @@ class CManager_CacheStorage_Memcached extends CManager_CacheStorage_Abstract
 	 */
 	public function __construct($config = array()) {
 		if (!class_exists('Memcached')) {
-			throw new CManager_CacheStorage_Exception('class Memcached unavailable');
+			throw new CManager_Cache_Storage_Exception('class Memcached unavailable');
 			// @todo: throw exception...
 		}
 

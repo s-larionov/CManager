@@ -1,6 +1,12 @@
 <?php
 
 class CManager_Helper_Number {
+
+	const SHORT_TYPE_1000	= '1000';
+	const SHORT_TYPE_BINARY	= 'binary';
+	const SHORT_TYPE_MONEY	= 'money';
+
+
 	/**
 	* Форматирование чисел
 	*
@@ -31,34 +37,58 @@ class CManager_Helper_Number {
 	* @return string
 	*/
 	public static function removeZeros($value, $point = '.') {
+		if (strpos($value, $point) === false) {
+			return $value;
+		}
 		return str_replace('.', $point, rtrim(rtrim(str_replace(',', '.', $value), '0'), '.'));
 	}
 
 	/**
 	 * @static
-	 * @param int|float $bytes
-	 * @param bool $binary
-	 * @param bool $full
+	 * @param int|float $number
+	 * @param array $suffixes
+	 * @param array $config
 	 * @return string
 	 */
-	public static function bytesInHuman($bytes, $binary = true, $full = false) {
-		if ($binary) {
-			$labels = $full
-				? array('byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte', 'exabyte', 'zettabyte', 'yottabyte')
-				: array('B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB');
-		} else {
-			$labels = $full
-				? array('byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte', 'exabyte', 'zettabyte', 'yottabyte')
-				: array('B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+	public static function short($number, array $suffixes = array(), array $config = array()) {
+		$config = array_merge(array(
+			'binary'		=> false,
+			'point'			=> '.',
+			'separator'		=> ' ',
+			'accuracy'		=> 1,
+			'removeZeros'	=> true
+		), $config);
+		if (empty($suffixes)) {
+			$suffixes = array('', 'K', 'M', 'B');
 		}
 
-		$levelsCount = count($labels);
-		$mul = $binary? 1024: 1000;
-		$level = 0;
-		while ($bytes >= 1024 && $level < $levelsCount) {
-			$bytes /= $mul;
+		$suffixesCount	= count($suffixes);
+		$multiplier		= $config['binary']? 1024: 1000;
+		$level			= 0;
+		while ($number >= $multiplier && $level < $suffixesCount) {
+			$number /= $multiplier;
 			$level++;
 		}
-		return self::removeZeros(self::format($bytes, 2, '', ','), ',') . ' ' . $labels[$level];
+
+		$result = self::format(
+			$number,
+			(int) $config['accuracy'],
+			(string) $config['separator'],
+			(string) $config['point']
+		);
+
+		if ($config['removeZeros']) {
+			return self::removeZeros($result, (string) $config['point']) . $suffixes[$level];
+		}
+		return $result . $suffixes[$level];
+	}
+
+	/**
+	 * @static
+	 * @param int|float $bytes
+	 * @return string
+	 */
+	public static function bytesInHuman($bytes) {
+		return self::short($bytes, array('b', 'Kb', 'Mb', 'Gb', 'Tb'), array('binary' => true));
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-class CManager_CacheStorage_Mock extends CManager_CacheStorage_Abstract {
+class CManager_Cache_Storage_Mock extends CManager_Cache_Storage_Abstract {
 	/**
 	 * @param string $key
 	 * @param int $time

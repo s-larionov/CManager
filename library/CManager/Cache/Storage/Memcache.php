@@ -1,6 +1,6 @@
 <?php
 
-class CManager_CacheStorage_Memcache extends CManager_CacheStorage_Abstract {
+class CManager_Cache_Storage_Memcache extends CManager_Cache_Storage_Abstract {
 	/**
 	 * @var Memcache
 	 */
@@ -11,7 +11,7 @@ class CManager_CacheStorage_Memcache extends CManager_CacheStorage_Abstract {
 	 */
 	public function __construct($config = array()) {
 		if (!extension_loaded('memcache')) {
-			throw new CManager_CacheStorage_Exception('Memcache extension is not loaded.');
+			throw new CManager_Cache_Storage_Exception('Memcache extension is not loaded.');
 		}
 
 		parent::__construct($config);

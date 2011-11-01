@@ -1,6 +1,6 @@
 <?php
 
-class CManager_CacheStorage_File extends CManager_CacheStorage_Abstract {
+class CManager_Cache_Storage_File extends CManager_Cache_Storage_Abstract {
 	/**
 	 * @param string $key
 	 * @param null $time

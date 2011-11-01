@@ -40,7 +40,7 @@ class CManager_Registry extends CManager_Registry_Abstract {
 	}
 
 	/**
-	 * @return CManager_Controller_Request_Abstract
+	 * @return CManager_Controller_Request_Abstract|CManager_Controller_Request_Http
 	 */
 	public static function getRequest() {
 		if (!self::$_request) {
@@ -58,7 +58,7 @@ class CManager_Registry extends CManager_Registry_Abstract {
 	}
 
 	/**
-	 * @return CManager_Controller_Response_Abstract
+	 * @return CManager_Controller_Response_Abstract|CManager_Controller_Response_Http
 	 */
 	public static function getResponse() {
 		if (!self::$_response) {

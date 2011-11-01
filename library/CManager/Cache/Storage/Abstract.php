@@ -1,7 +1,9 @@
 <?php
 
-abstract class CManager_CacheStorage_Abstract {
-
+abstract class CManager_Cache_Storage_Abstract {
+	/**
+	 * @var CManager_Cache_Storage_Abstract[]
+	 */
 	private static $instance = array();
 
 	/**
@@ -14,13 +16,19 @@ abstract class CManager_CacheStorage_Abstract {
 	 */
 	protected $_namespace = '';
 
+	/**
+	 * @static
+	 * @param string $storage
+	 * @return CManager_Cache_Storage_Abstract
+	 * @throws CManager_Cache_Storage_Exception
+	 */
 	final public static function factory($storage) {
 		if (!isset(self::$instance[$storage])) {
 			try {
-				$object = new ReflectionClass('CManager_CacheStorage_'. $storage);
+				$object = new ReflectionClass('CManager_Cache_Storage_'. $storage);
 				self::$instance[$storage] = $object->newInstance();
 			} catch (ReflectionException $e) {
-				throw new CManager_CacheStorage_Exception('trying_use_undefined_cache_strorage', $storage);
+				throw new CManager_Cache_Storage_Exception('trying_use_undefined_cache_strorage', $storage);
 			}
 		}
 		return self::$instance[$storage];
@@ -68,9 +76,12 @@ abstract class CManager_CacheStorage_Abstract {
 		return "{$this->_namespace}::{$key}";
 	}
 
+	public function closeConnection() {
+
+	}
+
 	abstract function load($key, $time = null);
 	abstract function read($key);
 	abstract function save($key, $data, $ttl = 0);
 	abstract function delete($key);
-
 }
