@@ -15,6 +15,12 @@ interface Mods_Glue_File_Interface {
 
 	/**
 	 * @abstract
+	 * @return boolean
+	 */
+	public function hasConditionalCommentName();
+
+	/**
+	 * @abstract
 	 * @param string $attributeName
 	 * @return string|null
 	 */
@@ -38,10 +44,10 @@ interface Mods_Glue_File_Interface {
 	 * @abstract
 	 * @return string
 	 */
-	public function getFrontendFilename();
+	public function getFilename();
 }
 
-abstract class Mods_Glue_File_Abstract extends CManager_File implements Mods_Glue_File_Interface {
+abstract class Mods_Glue_File_Abstract implements Mods_Glue_File_Interface {
 	/**
 	 * @var string[]
 	 */
@@ -52,37 +58,20 @@ abstract class Mods_Glue_File_Abstract extends CManager_File implements Mods_Glu
 	 */
 	protected $_root = null;
 
+	/**
+	 * @var string
+	 */
+	protected $_filename = null;
+
+	/**
+	 * @param string $filename
+	 * @param array $attributes
+	 */
 	public function __construct($filename, array $attributes = array()) {
-		parent::__construct(ltrim($filename, '/'));
+		$this->_filename = ltrim($filename, '/');
 		$this->setAttributes($attributes);
 	}
 
-	/**
-	 * @param string $root
-	 */
-	public function setRoot($root) {
-		$this->_root = rtrim((string) $root, '/') . '/';
-	}
-
-	/**
-	 * @return string
-	 * @throws Mods_Glue_Exception
-	 */
-	public function getRoot() {
-		if ($this->_root === null) {
-			$config = CManager_Registry::getConfig();
-			if ($config->root) {
-				$this->setRoot($config->root);
-			} else if (defined('APPLICATION_ROOT')) {
-				$this->setRoot(APPLICATION_ROOT);
-			} else if (isset($_SERVER['DOCUMENT_ROOT'])) {
-				$this->setRoot($_SERVER['DOCUMENT_ROOT']);
-			} else {
-				throw new Mods_Glue_Exception("Document root is not defined");
-			}
-		}
-		return $this->_root;
-	}
 
 	/**
 	 * @param string $name
@@ -127,7 +116,7 @@ abstract class Mods_Glue_File_Abstract extends CManager_File implements Mods_Glu
 		return "{$this->getRoot()}/{$this->_filename}";
 	}
 
-	public function getFrontendFilename() {
+	public function getUrl() {
 		return "/{$this->_filename}";
 	}
 }

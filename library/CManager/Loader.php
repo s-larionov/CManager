@@ -41,6 +41,7 @@ class CManager_Loader {
 		// ловим Warnings на отсутствие файла, но Fatal Error будут происходить все равно
 		set_error_handler(array(__CLASS__, '_loadFileErrorHandler')); // Warnings and errors are suppressed
 		if (!include_once($path)) {
+			restore_error_handler();
 			throw new CManager_Loader_Exception("Loading file {$path} error");
 		}
 		restore_error_handler();
