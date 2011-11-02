@@ -38,9 +38,12 @@ class CManager_Loader {
 
 		$path = $name .'.php';
 
-		if (!@include_once($path)) {
+		// ловим Warnings на отсутствие файла, но Fatal Error будут происходить все равно
+		set_error_handler(array(__CLASS__, '_loadFileErrorHandler')); // Warnings and errors are suppressed
+		if (!include_once($path)) {
 			throw new CManager_Loader_Exception("Loading file {$path} error");
 		}
+		restore_error_handler();
 
 		if (!class_exists($className) && !interface_exists($className)) {
 			throw new CManager_Loader_Exception("Class {$className} not found in file {$path}.");
@@ -48,4 +51,13 @@ class CManager_Loader {
 
 		return $path;
 	}
+
+	/**
+	 * @static
+	 * @param integer $errno
+	 * @param string $errstr
+	 * @param string $errfile
+	 * @param integer $errline
+	 */
+	protected static function _loadFileErrorHandler($errno, $errstr, $errfile, $errline) {}
 }
