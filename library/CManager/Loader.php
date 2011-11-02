@@ -38,10 +38,8 @@ class CManager_Loader {
 
 		$path = $name .'.php';
 
-		try {
-			include_once $path;
-		} catch (Exception $e) {
-			throw new CManager_Loader_Exception("Loading file {$path} error. ". $e->getMessage());
+		if (!@include_once($path)) {
+			throw new CManager_Loader_Exception("Loading file {$path} error");
 		}
 
 		if (!class_exists($className) && !interface_exists($className)) {
