@@ -35,9 +35,6 @@ abstract class Mods_Glue_File_Abstract {
 		} else {
 			$this->_filename = (string) $filename;
 		}
-		if (!file_exists($this->getFullFilename())) {
-			throw new Mods_Glue_File_Exception("File '{$this->getFullFilename()}' not exists.");
-		}
 
 		if (is_array($config)) {
 			$this->_config = $config;
@@ -76,14 +73,14 @@ abstract class Mods_Glue_File_Abstract {
 		return $this->_modifyTime;
 	}
 
-	/**
-	 * @param CManager_Filter_Interface $filter
-	 * @return Mods_Glue_File_Abstract
-	 */
-	public function addFilter(CManager_Filter_Interface $filter) {
-		$this->_filters[] = $filter;
-		return $this;
-	}
+//	/**
+//	 * @param CManager_Filter_Interface $filter
+//	 * @return Mods_Glue_File_Abstract
+//	 */
+//	public function addFilter(CManager_Filter_Interface $filter) {
+//		$this->_filters[] = $filter;
+//		return $this;
+//	}
 
 	/**
 	 * @return CManager_Filter_Interface[]
@@ -96,10 +93,13 @@ abstract class Mods_Glue_File_Abstract {
 	 * @return string
 	 */
 	public function getContent() {
-		$content = file_get_contents($this->getFullFilename());
-		foreach ($this->getFilters() as $filter) {
-			$content = $filter->filter($content);
+		if (!file_exists($this->getFullFilename())) {
+			throw new Mods_Glue_File_Exception("File '{$this->getFullFilename()}' not exists.");
 		}
+		$content = file_get_contents($this->getFullFilename());
+//		foreach ($this->getFilters() as $filter) {
+//			$content = $filter->filter($content);
+//		}
 		return $content;
 	}
 

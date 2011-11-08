@@ -13,14 +13,26 @@ interface Mods_Glue_Storage_Interface {
 	public function put(Mods_Glue_GroupFiles $fileGroup);
 
 	/**
+	 * @param Mods_Glue_GroupFiles $fileGroup
+	 * @return string
+	 */
+	public function get(Mods_Glue_GroupFiles $fileGroup);
+
+	/**
 	 * @param string $filename
 	 * @return string
 	 */
-	public function get($filename);
+	public function getByFilename($filename);
+
+	/**
+	 * @param Mods_Glue_GroupFiles $fileGroup
+	 * @return int
+	 */
+	public function getMTime(Mods_Glue_GroupFiles $fileGroup);
 
 	/**
 	 * @param string $filename
 	 * @return int
 	 */
-	public function getMTime($filename);
+	public function getMTimeByFilename($filename);
 }

@@ -1,10 +1,18 @@
 <?php
 
 class Mods_Glue_GroupFiles {
+	const DEFAULT_TEMPLATE_URL		= '/(:filename)?(:mtime)';
+	const DEFAULT_TEMPLATE_FILENAME	= '(:filename)';
+
 	/**
 	 * @var array
 	 */
 	protected $_config = array();
+
+	/**
+	 * @var boolean
+	 */
+	protected $_isCompiled = false;
 
 	/**
 	 * @var Mods_Glue_File_Abstract[]
@@ -49,8 +57,19 @@ class Mods_Glue_GroupFiles {
 	 */
 	public function render() {
 		$out = '';
-		foreach($this->getFiles() as $file) {
-			$out .= $file->render();
+		if ($this->isCompiled()) {
+			return Mods_Glue_Glue::newFile(
+				$this->getConfig('class'),
+				array_merge(
+					// todo: переделать
+					$this->_files[0]->getConfig(),
+					array('file' => $this->_generateUrl($this->getFilename()))
+				))
+				->render();
+		} else {
+			foreach($this->getFiles() as $file) {
+				$out .= $file->render();
+			}
 		}
 		return $out;
 	}
@@ -64,7 +83,11 @@ class Mods_Glue_GroupFiles {
 			$filenames[] = $file->getFilename();
 		}
 		sort($filenames);
-		return md5(implode(',', $filenames));
+		return str_replace(
+			'(:filename)',
+			md5(implode(',', $filenames)),
+			$this->getTemplateFilename()
+		);
 	}
 
 	/**
@@ -98,19 +121,37 @@ class Mods_Glue_GroupFiles {
 	 * @param int $mtime
 	 * @return string
 	 */
-	protected function _generateUrl($filename, $mtime) {
+	protected function _generateUrl($filename) {
 		return str_replace(
 			array('(:filename)', '(:mtime)'),
-			array((string) $filename, (string) $mtime),
-			$this->getUrlTemplate()
+			array((string) $filename, (string) $this->getMTime()),
+			$this->getTemplateUrl()
 		);
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getUrlTemplate() {
-		return $this->_urlTemplate;
+	public function getTemplateUrl() {
+		return $this->getConfig('url', self::DEFAULT_TEMPLATE_URL);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTemplateFilename() {
+		return $this->getConfig('filename', self::DEFAULT_TEMPLATE_FILENAME);
+	}
+
+	/**
+	 * @param boolean $flag
+	 * @return boolean
+	 */
+	public function isCompiled($flag = null) {
+		if ($flag !== null) {
+			$this->_isCompiled = (bool) $flag;
+		}
+		return $this->_isCompiled;
 	}
 
 }

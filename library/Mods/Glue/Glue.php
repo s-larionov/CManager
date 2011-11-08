@@ -43,13 +43,13 @@ class Mods_Glue_Glue {
 	}
 
 	/**
-	 * @return Mods_Glue_FileGroup[]
+	 * @return Mods_Glue_GroupFiles[]
 	 */
 	public function getGroups() {
 		if ($this->_grpups === null) {
 			$this->_grpups = array();
 			foreach ($this->getFiles() as $file) {
-				if (isset($this->_grpups[$file->getGroupName()])) {
+				if (!array_key_exists($file->getGroupName(), $this->_grpups)) {
 					$this->_grpups[$file->getGroupName()] = new Mods_Glue_GroupFiles($this->getConfig());
 				}
 				$this->_grpups[$file->getGroupName()]->addFile($file);
@@ -74,11 +74,26 @@ class Mods_Glue_Glue {
 	}
 
 	public function compile() {
-
+		$storage = $this->getStorage();
+		foreach($this->getGroups() as $group) {
+			if ($group->getMTime() > $storage->getMTime($group)) {
+				try {
+					var_dump($storage->getMTime($group));
+					$this->getStorage()->put($group);
+				} catch (Mods_Glue_Storage_Exception $e) {
+					continue;
+				}
+			}
+			$group->isCompiled(true);
+		}
 	}
 
 	public function render() {
-
+		$out = '';
+		foreach($this->_grpups as $group) {
+			$out .= $group->render();
+		}
+		return $out;
 	}
 
 	/**
@@ -93,5 +108,27 @@ class Mods_Glue_Glue {
 	 */
 	public function setStorage(Mods_Glue_Storage_Interface $storage) {
 		$this->_storage = $storage;
+	}
+
+	/**
+	 * @static
+	 * @param string $class
+	 * @param array $config
+	 * @return Mods_Glue_File_Abstract
+	 * @throws Mods_Glue_Exception
+	 */
+	public static function newFile($class, $config) {
+		if (!$class) {
+			throw new Mods_Glue_Exception("Class for file not defined");
+		}
+		try {
+			return CManager_Helper_Object::newInstance($class, 'Mods_Glue_File_Abstract', array($config));
+		} catch (CManager_Exception $e) {
+			try {
+				return CManager_Helper_Object::newInstance("Mods_Glue_File_{$class}", 'Mods_Glue_File_Abstract', array($config));
+			} catch (CManager_Exception $e) {
+				throw new Mods_Glue_Exception("Class '{$class}' not found");
+			}
+		}
 	}
 }

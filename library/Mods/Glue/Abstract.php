@@ -1,8 +1,6 @@
 <?php
 
 abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
-	const DEFAULT_URL_TEMPLATE = '/(:filename)?(:mtime)';
-
 	/**
 	 * @var Mods_Glue_Glue
 	 */
@@ -19,14 +17,14 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
 			$items = array($items);
 		}
 		foreach($items as $item) {
-			$this->getGlue()->addFile($this->_createFile($item));
+			$this->getGlue()->addFile(Mods_Glue_Glue::newFile($this->getConfig()->class, $item));
 		}
 
 		try {
 			$this->getGlue()->compile();
 		} catch (Mods_Glue_Exception $e) {}
 
-		$this->getGlue()->render();
+		$this->sendContent($this->getGlue()->render());
 	}
 
 	/**
@@ -59,9 +57,7 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
 	 */
 	public function getGlue() {
 		if ($this->_glue === null) {
-			$config = array();
-			$config['url'] = $this->getConfig()->get('url', self::DEFAULT_URL_TEMPLATE);
-			$this->_glue = new Mods_Glue_Glue($config);
+			$this->_glue = new Mods_Glue_Glue($this->getConfig()->toArray());
 		}
 		return $this->_glue;
 	}
@@ -71,11 +67,4 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
 	 * @return Zend_Config
 	 */
 	abstract public function getConfig();
-
-	/**
-	 * @abstract
-	 * @param string|string[] $config
-	 * @return Mods_Glue_File_Abstract
-	 */
-	abstract protected  function _createFile($config);
 }
