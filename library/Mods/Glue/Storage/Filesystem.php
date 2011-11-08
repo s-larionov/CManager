@@ -1,81 +1,82 @@
 <?php
 
-class Mods_Glue_Storage_Filesystem extends Mods_Glue_Storage_Abstract {
+class Mods_Glue_Storage_Filesystem implements  Mods_Glue_Storage_Interface {
 
 	/**
 	 * @var string
 	 */
-	protected $_fromPath = null;
+	protected $_path = '';
 
 	/**
 	 * @var string
 	 */
-	protected $_compilePath = null;
-
-	/**
-	 * @var string
-	 */
-	protected $_documentRoot = null;
+	protected $_filename = '(:filename)';
 
 	/**
 	 * @param array $config
 	 */
 	public function __construct(array $config) {
-		if (isset($config['document_root'])) {
-			$this->setDocumentRoot($config['document_root']);
+		if (isset($config['path'])) {
+			$this->_path = $config['path'];
 		}
-		if (!isset($config['from_path'])) {
-			throw new Mods_Glue_Storage_Exception("Parameter 'from_path' is required");
+		if (isset($config['filename'])) {
+			$this->_path = $config['filename'];
 		}
-		$config['from_path'] = str_replace('(:root)', $this->getDocumentRoot(), $config['from_path']);
-		if (!is_readable($config['from_path'])) {
-			throw new Mods_Glue_Storage_Exception("Path {$config['from_path']} is not readable");
-		}
-		if (!isset($config['compile_path'])) {
-			throw new Mods_Glue_Storage_Exception("Parameter 'compile_path' is required");
-		}
-		$config['compile_path'] = str_replace('(:root)', $this->getDocumentRoot(), $config['compile_path']);
-		if (!is_writable($config['compile_path'])) {
-			throw new Mods_Glue_Storage_Exception("Path {$config['compile_path']} is not writable");
-		}
-		if (!isset($config['link'])) {
-			throw new Mods_Glue_Storage_Exception("Parameter 'link' is required");
-		}
-		$this->_path = rtrim($config['path'], '/') . '/';
 	}
 
-	public function putFile(Mods_Glue_File_Abstract $file) {
-		// TODO: Implement putFile() method.
+	/**
+	 * @param Mods_Glue_GroupFiles $fileGroup
+	 * @return Mods_Glue_Storage_Filesystem
+	 */
+	public function put(Mods_Glue_GroupFiles $fileGroup) {
+		file_put_contents(
+			$this->_getFullFilename($fileGroup->getFilename()),
+			$fileGroup->getContent()
+		);
+		return $this;
+	}
+
+	/**
+	 * @param string $filename
+	 * @return string
+	 */
+	protected function _getFullFilename($filename) {
+		return $this->getPath()
+				. DIRECTORY_SEPARATOR
+				. basename(str_replace(
+					'(:filename)',
+					$filename,
+					$this->getFilename()
+				));
+	}
+
+	/**
+	 * @param string $filename
+	 * @return int
+	 */
+	public function getMTime($filename) {
+		return filemtime($this->_getFullFilename($filename));
+	}
+
+	/**
+	 * @param string $filename
+	 * @return string
+	 */
+	public function get($filename) {
+		file_get_contents($this->_getFullFilename($filename));
 	}
 
 	/**
 	 * @return string
-	 * @throws Mods_Glue_Exception
 	 */
-	public function getDocumentRoot() {
-		if ($this->_documentRoot === null) {
-			$config = CManager_Registry::getConfig();
-			if ($config->root) {
-				$this->setRoot($config->root);
-			} else if (defined('APPLICATION_ROOT')) {
-				$this->setRoot(APPLICATION_ROOT);
-			} else if (isset($_SERVER['DOCUMENT_ROOT'])) {
-				$this->setRoot($_SERVER['DOCUMENT_ROOT']);
-			} else {
-				throw new Mods_Glue_Exception("Document root is not defined");
-			}
-		}
-		return $this->_root;
+	public function getPath() {
+		return $this->_path;
 	}
 
 	/**
-	 * @param string $documentRoot
-	 * @return Mods_Glue_Storage_Filesystem
+	 * @return string
 	 */
-	public function setDocumentRoot($documentRoot) {
-		if (!file_exists($documentRoot)) {
-			throw new Mods_Glue_Storage_Exception("Document root {$documentRoot} does not exists");
-		}
-		$this->_documentRoot = (string) $documentRoot;
+	public function getFilename() {
+		return $this->_filename;
 	}
 }

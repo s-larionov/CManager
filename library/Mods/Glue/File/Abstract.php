@@ -1,123 +1,154 @@
 <?php
 
-interface Mods_Glue_File_Interface {
-	/**
-	 * @param string $filename
-	 * @param string[] $attributes
-	 */
-	public function __construct($filename, array $attributes = array());
-
-	/**
-	 * @abstract
-	 * @return string|null
-	 */
-	public function getConditionalCommentName();
-
-	/**
-	 * @abstract
-	 * @return boolean
-	 */
-	public function hasConditionalCommentName();
-
-	/**
-	 * @abstract
-	 * @param string $attributeName
-	 * @return string|null
-	 */
-	public function getAttribute($attributeName);
-
-	/**
-	 * @abstract
-	 * @param string $name
-	 * @param string $value
-	 * @return Mods_Glue_File_Interface
-	 */
-	public function setAttribute($name, $value);
-
-	/**
-	 * @abstract
-	 * @return string
-	 */
-	public function toHtml();
-
-	/**
-	 * @abstract
-	 * @return string
-	 */
-	public function getFilename();
-}
-
-abstract class Mods_Glue_File_Abstract implements Mods_Glue_File_Interface {
-	/**
-	 * @var string[]
-	 */
-	protected $_attributes = array();
-
-	/**
-	 * @var string
-	 */
-	protected $_root = null;
-
+abstract class Mods_Glue_File_Abstract {
 	/**
 	 * @var string
 	 */
 	protected $_filename = null;
 
 	/**
-	 * @param string $filename
-	 * @param array $attributes
+	 * @var array
 	 */
-	public function __construct($filename, array $attributes = array()) {
-		$this->_filename = ltrim($filename, '/');
-		$this->setAttributes($attributes);
-	}
-
+	protected $_config = array();
 
 	/**
-	 * @param string $name
+	 * @var CManager_Filter_Interface[]
+	 */
+	protected $_filters = null;
+
+	/**
+	 * @var int
+	 */
+	protected $_modifyTime = null;
+
+	/**
+	 * @param array|string $filename
+	 * @param array $config
+	 */
+	public function __construct($filename, array $config = array()) {
+		if (is_array($filename)) {
+			$config = $filename;
+			if (!isset($config['file'])) {
+				throw new Mods_Glue_File_Exception("Filename is empty");
+			}
+			$this->_filename = $config['file'];
+		} else {
+			$this->_filename = (string) $filename;
+		}
+		if (!file_exists($this->getFullFilename())) {
+			throw new Mods_Glue_File_Exception("File '{$this->getFullFilename()}' not exists.");
+		}
+
+		if (is_array($config)) {
+			$this->_config = $config;
+		}
+	}
+
+	/**
+	 * @param string $alias
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function getConfig($alias = null, $default = null) {
+		if ($alias === null) {
+			return $this->_config;
+		}
+		if (array_key_exists($alias, $this->getConfig())) {
+			return $this->_config[$alias];
+		}
+		return $default;
+	}
+
+	/**
 	 * @return string|null
 	 */
-	public function getAttribute($name) {
-		if (array_key_exists($name, $this->_attributes)) {
-			return $this->_attributes[$name];
-		}
-		return null;
+	public function getConditionalComment() {
+		return $this->getConfig('if', null);
 	}
 
 	/**
-	 * @param string $name
-	 * @param string $value
+	 * @return int
+	 */
+	public function getMTime() {
+		if ($this->_modifyTime === null) {
+			$this->_modifyTime = filemtime($this->getFullFilename());
+		}
+		return $this->_modifyTime;
+	}
+
+	/**
+	 * @param CManager_Filter_Interface $filter
 	 * @return Mods_Glue_File_Abstract
 	 */
-	public function setAttribute($name, $value) {
-		$this->_attributes[(string) $name] = (string) $value;
+	public function addFilter(CManager_Filter_Interface $filter) {
+		$this->_filters[] = $filter;
 		return $this;
 	}
 
 	/**
-	 * @param string[] $attributes
-	 * @return Mods_Glue_File_Abstract
+	 * @return CManager_Filter_Interface[]
 	 */
-	public function setAttributes(array $attributes) {
-		foreach($attributes as $name => $value) {
-			$this->setAttribute($name, $value);
-		}
-		return $this;
+	public function getFilters() {
+		return $this->_filters;
 	}
 
 	/**
-	 * @return null|string
+	 * @return string
 	 */
-	public function getConditionalCommentName() {
-		return $this->getAttribute('if');
+	public function getContent() {
+		$content = file_get_contents($this->getFullFilename());
+		foreach ($this->getFilters() as $filter) {
+			$content = $filter->filter($content);
+		}
+		return $content;
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getFullFilename() {
+		return '/'. trim($this->getConfig('documentRoot', $_SERVER['DOCUMENT_ROOT']), '/') .'/'. ltrim($this->_filename, '/');
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getFilename() {
-		return "{$this->getRoot()}/{$this->_filename}";
+		return $this->_filename;
 	}
 
-	public function getUrl() {
-		return "/{$this->_filename}";
+	/**
+	 * @return string
+	 */
+	public function getGroupName() {
+		return $this->getConditionalComment() . $this->getMimeType();
 	}
+
+	/**
+	 * @return string
+	 */
+	public function render() {
+		$out = $this->_render();
+		if (($conditionalComment = $this->getConditionalComment()) !== null) {
+			$out = "<!--[if {$conditionalComment}]>{$out}<![endif]-->";
+		}
+		return $out;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function __sleep() {
+		return array('_filters', '_config', '_filename', '_modifyTime');
+	}
+
+	/**
+	 * @return string
+	 */
+	abstract public function getMimeType();
+
+	/**
+	 * @return string
+	 */
+	abstract protected function _render();
 }
-

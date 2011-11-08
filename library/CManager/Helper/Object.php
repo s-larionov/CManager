@@ -21,8 +21,6 @@ class CManager_Helper_Object {
 			throw new CManager_Exception("Object must be subclass of {$parentClassName}");
 		}
 
-		var_dump($reflection);
-
 		return $reflection->newInstanceArgs($arguments);
 	}
 }

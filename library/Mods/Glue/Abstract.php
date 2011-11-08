@@ -1,77 +1,81 @@
 <?php
 
 abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
-	/**
-	 * @var Mods_Glue_File_Abstract[]
-	 */
-	protected $_files = array();
+	const DEFAULT_URL_TEMPLATE = '/(:filename)?(:mtime)';
 
 	/**
-	 * @var Mods_Glue_Storage_Abstract
+	 * @var Mods_Glue_Glue
 	 */
-	protected $_storage = null;
+	protected $_glue = null;
 
 	public function run() {
-		$storage = $this->getParam('storage');
-		if (!is_array($storage)) {
-			$storage = array($storage);
+		$this->getGlue()->setStorage($this->_createStorage());
+
+		$items = $this->getParam('item');
+		if ($items === null) {
+			throw new Mods_Glue_Exception("Items is empty");
+		}
+		if (!is_array($items) || !CManager_Helper_Array::isNumberedArray($items)) {
+			$items = array($items);
+		}
+		foreach($items as $item) {
+			$this->getGlue()->addFile($this->_createFile($item));
 		}
 
-		$this->setStorage(Mods_Glue_Storage_Factory::factory($storage));
+		try {
+			$this->getGlue()->compile();
+		} catch (Mods_Glue_Exception $e) {}
 
-		$files = $this->getParam('item', array());
-		if (!is_array($files)) {
-			$files = array($files);
-		}
-		foreach($files as $file) {
-
-		}
+		$this->getGlue()->render();
 	}
 
 	/**
-	 * @param Mods_Glue_Storage_Abstract $storage
-	 * @return Mods_Glue_Abstract
+	 * @return Mods_Glue_Storage_Interface
 	 */
-	public function setStorage(Mods_Glue_Storage_Abstract $storage) {
-		var_dump($storage);
-		$this->_storage = $storage;
-		return $this;
-	}
-
-	/**
-	 * @return Mods_Glue_Storage_Abstract
-	 * @throws Mods_Exception
-	 */
-	public function getStorage() {
-		if ($this->_storage === null) {
-			throw new Mods_Exception("Storage not configured");
+	protected function _createStorage() {
+		$config = /** @var Zend_Config $config */ $this->getConfig()->storage;
+		if (!($config instanceof Zend_Config)) {
+			throw new Mods_Glue_Exception("Storage not configured or wrong configuration data");
 		}
-		return $this->_storage;
-	}
-
-	/**
-	 * @param Mods_Glue_Abstract $file
-	 * @param array $attributes
-	 * @return Mods_Glue_Abstract
-	 */
-	public function addFile(Mods_Glue_Abstract $file, array $attributes = array()) {
-
-
-
-		return $this;
-	}
-
-	/**
-	 * Получение содержимого файла. Здесь его можно минимизировать,
-	 * почистить от всего лишнего и т.д.
-	 *
-	 * @param string $filename
-	 * @return string|false
-	 */
-	public function getFileContent($filename) {
-		if (file_exists($filename)) {
-			return file_get_contents($filename);
+		$adapter = (string) $config->adapter;
+		if ($adapter == '') {
+			throw new Mods_Glue_Exception("Storage adapter not configured");
 		}
-		return false;
+		$configArray = $config->toArray();
+		try {
+			$storage = CManager_Helper_Object::newInstance($adapter, 'Mods_Glue_Storage_Interface', array($configArray));
+		} catch (CManager_Exception $e) {
+			try {
+				$storage = CManager_Helper_Object::newInstance("Mods_Glue_Storage_{$adapter}", 'Mods_Glue_Storage_Interface', array($configArray));
+			} catch (CManager_Exception $e) {
+				throw new Mods_Glue_Exception("Adapter '{$adapter}' not found");
+			}
+		}
+		return $storage;
 	}
+
+	/**
+	 * @return Mods_Glue_Glue
+	 */
+	public function getGlue() {
+		if ($this->_glue === null) {
+			$config = array();
+			$config['url'] = $this->getConfig()->get('url', self::DEFAULT_URL_TEMPLATE);
+			$this->_glue = new Mods_Glue_Glue($config);
+		}
+		return $this->_glue;
+	}
+
+	/**
+	 * @abstract
+	 * @return Zend_Config
+	 */
+	abstract public function getConfig();
+
+	/**
+	 * @abstract
+	 * @param string|string[] $config
+	 * @return Mods_Glue_File_Abstract
+	 */
+	abstract protected  function _createFile($config);
 }

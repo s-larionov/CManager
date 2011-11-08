@@ -1,0 +1,97 @@
+<?php
+
+class Mods_Glue_Glue {
+	/**
+	 * @var Mods_Glue_GroupFiles[]
+	 */
+	protected $_grpups = null;
+	/**
+	 * @var Mods_Glue_File_Abstract[]
+	 */
+	protected $_files = array();
+
+	/**
+	 * @var Mods_Glue_Storage_Interface
+	 */
+	protected $_storage = null;
+
+	/**
+	 * @var array
+	 */
+	protected $_config = array();
+
+	/**
+	 * @param array $config
+	 */
+	public function __construct(array $config = array()) {
+		$this->_config = $config;
+	}
+
+	/**
+	 * @return Mods_Glue_File_Abstract[]
+	 */
+	public function getFiles() {
+		return $this->_files;
+	}
+
+	/**
+	 * @param Mods_Glue_File_Abstract $file
+	 * @return void
+	 */
+	public function addFile(Mods_Glue_File_Abstract $file) {
+		$this->_files[] = $file;
+	}
+
+	/**
+	 * @return Mods_Glue_FileGroup[]
+	 */
+	public function getGroups() {
+		if ($this->_grpups === null) {
+			$this->_grpups = array();
+			foreach ($this->getFiles() as $file) {
+				if (isset($this->_grpups[$file->getGroupName()])) {
+					$this->_grpups[$file->getGroupName()] = new Mods_Glue_GroupFiles($this->getConfig());
+				}
+				$this->_grpups[$file->getGroupName()]->addFile($file);
+			}
+		}
+		return $this->_grpups;
+	}
+
+	/**
+	 * @param string $alias
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function getConfig($alias = null, $default = null) {
+		if ($alias === null) {
+			return $this->_config;
+		}
+		if (array_key_exists($alias, $this->getConfig())) {
+			return $this->_config[$alias];
+		}
+		return $default;
+	}
+
+	public function compile() {
+
+	}
+
+	public function render() {
+
+	}
+
+	/**
+	 * @return Mods_Glue_Storage_Interface
+	 */
+	public function getStorage() {
+		return $this->_storage;
+	}
+
+	/**
+	 * @param Mods_Glue_Storage_Interface $storage
+	 */
+	public function setStorage(Mods_Glue_Storage_Interface $storage) {
+		$this->_storage = $storage;
+	}
+}
