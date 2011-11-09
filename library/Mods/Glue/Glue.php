@@ -78,7 +78,6 @@ class Mods_Glue_Glue {
 		foreach($this->getGroups() as $group) {
 			if ($group->getMTime() > $storage->getMTime($group)) {
 				try {
-					var_dump($storage->getMTime($group));
 					$this->getStorage()->put($group);
 				} catch (Mods_Glue_Storage_Exception $e) {
 					continue;
