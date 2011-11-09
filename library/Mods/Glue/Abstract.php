@@ -6,6 +6,10 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
 	 */
 	protected $_glue = null;
 
+	/**
+	 * @return void
+	 * @throws Mods_Glue_Exception
+	 */
 	public function run() {
 		$this->getGlue()->setStorage($this->_createStorage());
 

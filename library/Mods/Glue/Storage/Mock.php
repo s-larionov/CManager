@@ -27,7 +27,7 @@ class Mods_Glue_Storage_Mock implements  Mods_Glue_Storage_Interface {
 	 * @return int
 	 */
 	public function getMTimeByFilename($filename) {
-		return time();
+		return 0;
 	}
 
 	/**

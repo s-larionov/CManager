@@ -132,7 +132,7 @@ abstract class Mods_Glue_File_Abstract {
 		if (($conditionalComment = $this->getConditionalComment()) !== null) {
 			$out = "<!--[if {$conditionalComment}]>{$out}<![endif]-->";
 		}
-		return $out;
+		return "{$out}\n";
 	}
 
 	/**

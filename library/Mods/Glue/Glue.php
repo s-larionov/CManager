@@ -73,12 +73,15 @@ class Mods_Glue_Glue {
 		return $default;
 	}
 
+	/**
+	 * @return void
+	 */
 	public function compile() {
 		$storage = $this->getStorage();
 		foreach($this->getGroups() as $group) {
 			if ($group->getMTime() > $storage->getMTime($group)) {
 				try {
-					$this->getStorage()->put($group);
+					$storage->put($group);
 				} catch (Mods_Glue_Storage_Exception $e) {
 					continue;
 				}
@@ -87,6 +90,9 @@ class Mods_Glue_Glue {
 		}
 	}
 
+	/**
+	 * @return string
+	 */
 	public function render() {
 		$out = '';
 		foreach($this->_grpups as $group) {
