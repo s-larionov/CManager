@@ -80,7 +80,6 @@ class CManager_Controller_Route {
 				if (is_object($vars[$var->name]) && $vars[$var->name] instanceof CManager_Controller_Route_Var_Abstract) {
 					$value = $vars[$var->name]->getRawValue();
 				} else {
-
 					// если у переменной указан @pattern, то пытаемся ее собрать в "оригинал"
 					if ($var->pattern !== null) {
 						$value = preg_replace('~\\([^)]+\\)~', '(:var)', $var->pattern);
@@ -101,6 +100,7 @@ class CManager_Controller_Route {
 						if (strpos($value, '(:var)') !== false) {
 							throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' must be is array with length " . (count($vars[$var->name]) + substr_count($value, '(:var)')) . " items");
 						}
+					// если у переменной указан @explode, то собираем массив
 					} else if ($var->explode !== null && is_array($vars[$var->name])) {
 						$value = implode($var->explode, $vars[$var->name]);
 					} else {
@@ -185,11 +185,11 @@ class CManager_Controller_Route {
 	 * @return mixed
 	 */
 	protected function _prepareVariable($value, CManager_Controller_Router_Config_RouteVar $config) {
-		$rawValue = $value;
 		$value = urldecode($value);
 		if (empty($value) && $config->default !== null) {
 			$value = $config->default;
 		}
+		$rawValue = $value;
 		if ($config->pattern !== null) {
 			if (preg_match('~^' . str_replace('~', '\\~', $config->pattern) . '$~', $value, $match)) {
 				unset($match[0]);
@@ -228,9 +228,13 @@ class CManager_Controller_Route {
 			case $namespace == 'string':
 				break;
 			case class_exists($namespace) && $value !== null:
-				$value = new $namespace($value);
+				$value = CManager_Helper_Object::newInstance(
+					$namespace,
+					'CManager_Controller_Route_Var_Abstract',
+					array($value)
+				);
 				$value->setRawValue($rawValue);
-				if (!($value instanceof CManager_Controller_Route_Var_Abstract) || !$value->isValidRouteVariable()) {
+				if (!$value->isValidRouteVariable()) {
 					$value = null;
 				}
 				break;

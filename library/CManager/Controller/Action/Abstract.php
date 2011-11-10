@@ -44,7 +44,7 @@ abstract class CManager_Controller_Action_Abstract extends CManager_Controller_A
 	/**
 	 *	Возвращает объект текущей страницы.
 	 *
-	 *	@return CManager_Controller_Page_Abstract
+	 *	@return CManager_Controller_Page
 	 */
 	protected function getPage() {
 		return $this->getRouter()->getPage();
