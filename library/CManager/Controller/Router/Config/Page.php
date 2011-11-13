@@ -25,7 +25,7 @@ class CManager_Controller_Router_Config_Page extends CManager_Controller_Router_
 		'content_type' => array(
 			'namespace' => 'string',
 			'required' => false,
-			'default' => 'text/html; charset=utf8'
+			'default' => 'text/html; charset=utf-8'
 		),
 		'redirect' => array(
 			'namespace' => 'string',
