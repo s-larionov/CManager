@@ -1,15 +1,14 @@
 <?php
 
 class CManager_Helper_Xml {
-	const CRLF = "\n";
-
 	/**
-	 * @param string  $element       Название _Xml-элемента
-	 * @param mixed   $value         Значение элемента
+	 * @param string  $element	   Название _Xml-элемента
+	 * @param mixed   $value		 Значение элемента
 	 * @param array   $elementAttrs  Аттрибуты элемента
-	 * @return string                _Xml-строка
+	 * @param array $config
+	 * @return string				_Xml-строка
 	 */
-	public static function parse($element, $value, array $elementAttrs = array()) {
+	public static function parse($element, $value, array $elementAttrs = array(), array $config = array()) {
 		switch (true) {
 			case is_numeric($value):
 			case empty($value):
@@ -19,7 +18,7 @@ class CManager_Helper_Xml {
 				$value = $value? 'true': 'false';
 				break;
 			case is_array($value):
-				$value = self::_parseArray($value);
+				$value = self::_parseArray($value, $config);
 				break;
 			case is_object($value) && is_callable(array($value, 'toXml')):
 				return $value->toXml();
@@ -43,25 +42,35 @@ class CManager_Helper_Xml {
 			$elementAttrsStr .= ' ' . $attrName .'="' . htmlspecialchars($attrValue) . '"';
 		}
 		$xml = empty($value) && !is_numeric($value)
-			? "<{$element}{$elementAttrsStr}/>" . self::CRLF
-			: "<{$element}{$elementAttrsStr}>{$value}</{$element}>" . self::CRLF;
+			? "<{$element}{$elementAttrsStr}/>"
+			: "<{$element}{$elementAttrsStr}>{$value}</{$element}>";
 		return $xml;
 	}
 
 	/**
-	* @param array   $array
-	* @param string  $rowElementName
-	* @param bool    $keysAsElements
-	* @param array   $elementAttributes
-	* @return string
-	*/
-	protected static function _parseArray(array $array, $rowElementName = 'row', $keysAsElements = true, $elementAttributes = array()) {
+	 * @param array $array
+	 * @param array $config
+	 * @return string
+	 */
+	protected static function _parseArray(array $array, array $config = array()) {
+		$config = array_merge(array(
+				'rowElementName'	=> 'row',
+				'keysAsElements'	=> null,
+				'elementAttributes'	=> array()
+			), $config);
+
 		$xml = '';
-		$keysAsElements	= !($keysAsElements) || CManager_Helper_Array::isNumberedArray($array)? false: true;
+
+		if ($config['keysAsElements'] === null && !CManager_Helper_Array::isNumberedArray($array)) {
+			$config['keysAsElements'] = true;
+		} else if ($config['keysAsElements'] && CManager_Helper_Array::isNumberedArray($array)) {
+			throw new CManager_Exception("Can't generate xml with named items for numbered array");
+		}
+
 		foreach($array as $key => $row) {
 			$elementAttributesValues = array();
-			if (!empty($elementAttributes) && is_array($row)) {
-				foreach($elementAttributes as $attr) {
+			if (!empty($config['elementAttributes']) && is_array($row)) {
+				foreach($config['elementAttributes'] as $attr) {
 					if (isset($row[$attr])) {
 						$elementAttributesValues[$attr] = $row[$attr];
 						$row[$attr] = null;
@@ -72,10 +81,10 @@ class CManager_Helper_Xml {
 				}
 			}
 
-			if ($keysAsElements) {
+			if ($config['keysAsElements']) {
 				$xml .= self::parse($key, $row, $elementAttributesValues);
 			} else {
-				$xml .= self::parse($rowElementName, $row, array_merge(array('key' => $key), $elementAttributesValues));
+				$xml .= self::parse($config['rowElementName'], $row, array_merge(array('key' => $key), $elementAttributesValues));
 			}
 		}
 		return $xml;

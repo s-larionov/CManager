@@ -42,6 +42,7 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 			'name' => $name,
 			'class' => $this->getParam('class', '')
 		);
+
 		$this->sendContent(CManager_Dom_Document::xslTransformSource($xsl, $xml, $params));
 	}
 
@@ -70,6 +71,7 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 
 	/**
 	 * @static
+	 * @param \CManager_Controller_Router_Config_Abstract|null $structure
 	 * @return void
 	 */
 	protected static function _createNavigations(CManager_Controller_Router_Config_Abstract $structure = null) {
@@ -99,9 +101,13 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 	 * @return void
 	 */
 	protected static function _isHerePage(CManager_Controller_Router_Config_Page $pageConfig,
-										  Mods_Navigation_Item $navigation = null) {
+										  Mods_Navigation_Item $navigation) {
+		if (self::_getCurrentPage()->getStructure()->name == $pageConfig->name) {
+			$navigation->here = true;
+			return;
+		}
 		foreach($pageConfig->page as $page) {
-			if (self::_getCurrentPage()->getStructure()->name == $pageConfig->name) {
+			if (self::_getCurrentPage()->getStructure()->name == $page->name) {
 				$navigation->here = true;
 				return;
 			}
@@ -126,7 +132,8 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 		}
 
 		$navigationTags = $pageConfig->nav;
-		if (empty($navigationTags) || $navigation !== null) {
+
+		if (empty($navigationTags) && $navigation !== null) {
 			// определяем находится ли текущая страница внутри этой ветки навигации
 			static::_isHerePage($pageConfig, $navigation);
 		}
@@ -165,6 +172,8 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 				try {
 					$url = self::_getRouter()->generateUrl($page->name);
 				} catch (CManager_Controller_Route_Exception $e) {
+					// определяем находится ли текущая страница внутри этой ветки навигации
+					static::_isHerePage($page, $navItem);
 					continue;
 				}
 				static::_tryAppendPage($page, array(

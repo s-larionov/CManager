@@ -93,7 +93,7 @@ class CManager_Controller_Route {
 				// если переменная передана, то подставляем ее значение (предварительно провалидировав)
 				$valueRegExp = '~^(?:' . str_replace('~', '\\~', $var->rule) . ')$~';
 				if (!preg_match($valueRegExp, $value)) {
-					throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' is not valid");
+					throw new CManager_Controller_Route_Exception("Variable '{$var->name}' ['{$vars[$var->name]}'] for route '{$this->getPageConfig()->name}' is not valid");
 				}
 			} else if ($var->default !== null) {
 				// если переменная не передана, но у нее есть значение по-умолчанию, то подставляем его

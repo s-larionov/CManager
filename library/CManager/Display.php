@@ -64,4 +64,22 @@ class CManager_Display {
 	public static function url($name, array $params = array()) {
 		return self::getApplication()->getRouter()->generateUrl($name, $params);
 	}
+
+	/**
+	 * @static
+	 * @param string $name
+	 * @internal param array $param1
+	 * @internal param array $param1Value
+	 * @internal param array $param2
+	 * @internal param array $param2Value
+	 * @internal ...
+	 * @return string
+	 */
+	public static function urlFromXsl($name) {
+		$params = array();
+		for($i = 1, $count = func_num_args(); $i < $count; $i += 2) {
+			$params[(string) func_get_arg($i)] = func_get_arg($i + 1);
+		}
+		return self::getApplication()->getRouter()->generateUrl($name, $params);
+	}
 }

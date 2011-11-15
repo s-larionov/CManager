@@ -250,9 +250,6 @@ class Mods_Navigation_Item {
 			unset($attributes['here']);
 		}
 
-		if (!isset($this->_data['title'])) {
-			var_dump($this->_data);
-		}
 		return CManager_Helper_Xml::parse('navigation', array(
 			'titles' => $this->_data['title'],
 			'items' => $this->getSubItems()
