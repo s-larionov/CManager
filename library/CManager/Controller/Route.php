@@ -80,28 +80,11 @@ class CManager_Controller_Route {
 				if (is_object($vars[$var->name]) && $vars[$var->name] instanceof CManager_Controller_Route_Var_Abstract) {
 					$value = $vars[$var->name]->getRawValue();
 				} else {
-					// если у переменной указан @pattern, то пытаемся ее собрать в "оригинал"
 					if ($var->pattern !== null) {
-						$value = preg_replace('~\\([^)]+\\)~', '(:var)', $var->pattern);
-
-						if (is_array($vars[$var->name])) {
-							$vars[$var->name] = array_values($vars[$var->name]);
-						} else {
-							$vars[$var->name] = array($vars[$var->name]);
-						}
-
-						foreach($vars[$var->name] as $patternValue) {
-							if (($pos = strpos($value, '(:var)')) !== false) {
-								$value = substr_replace($value, $patternValue, $pos, 6);
-							} else {
-								throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' is not valid");
-							}
-						}
-						if (strpos($value, '(:var)') !== false) {
-							throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' must be is array with length " . (count($vars[$var->name]) + substr_count($value, '(:var)')) . " items");
-						}
-					// если у переменной указан @explode, то собираем массив
+						// если у переменной указан @pattern, то пытаемся ее собрать в "оригинал"
+						$value = $this->_fillPattern($var, $vars[$var->name]);
 					} else if ($var->explode !== null && is_array($vars[$var->name])) {
+						// если у переменной указан @explode, то собираем массив
 						$value = implode($var->explode, $vars[$var->name]);
 					} else {
 						$value = (string) $vars[$var->name];
@@ -112,16 +95,24 @@ class CManager_Controller_Route {
 				if (!preg_match($valueRegExp, $value)) {
 					throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' is not valid");
 				}
-				$url = str_replace('(:' . $var->name . ')', $value, $url);
-				// удаляем переменную из списка. нужно что бы потом безпроблемно сгенерировать REQUEST_QUERY
-				unset($vars[$var->name]);
 			} else if ($var->default !== null) {
 				// если переменная не передана, но у нее есть значение по-умолчанию, то подставляем его
-				$url = str_replace('(:' . $var->name . ')', $var->default, $url);
+				if ($var->pattern !== null) {
+					// если у переменной указан @pattern, то пытаемся ее собрать в "оригинал"
+					$value = $this->_fillPattern($var, $var->default);
+				} else {
+					$value = $var->default;
+				}
  			} else {
 				throw new CManager_Controller_Route_Exception("Not all required parameters for route '{$this->getPageConfig()->name}' passed");
 			}
+
+			// подставляем в url
+			$url = str_replace('(:' . $var->name . ')', $value, $url);
+			// удаляем переменную из списка. нужно что бы потом безпроблемно сгенерировать REQUEST_QUERY
+			unset($vars[$var->name]);
 		}
+
 		if ($addQueryParams && count($vars) > 0) {
 			foreach($vars as $name => &$var) {
 				$var = urlencode($name) . ($var !== ''? '=' . urlencode($var): '');
@@ -129,6 +120,30 @@ class CManager_Controller_Route {
 			$url .= '?' . implode('&amp;', $vars);
 		}
 		return $url;
+	}
+
+	/**
+	 * @param CManager_Controller_Router_Config_RouteVar $var
+	 * @param array|string $varValue
+	 * @return string
+	 * @throws CManager_Controller_Route_Exception
+	 */
+	protected function _fillPattern(CManager_Controller_Router_Config_RouteVar $var, $varValue) {
+		$value		= preg_replace('~\\([^)]+\\)~', '(:var)', $var->pattern);
+		$varValue	= is_array($varValue)? array_values($varValue): array($varValue);
+
+		foreach($varValue as $patternValue) {
+			if (($pos = strpos($value, '(:var)')) !== false) {
+				$value = substr_replace($value, $patternValue, $pos, 6);
+			} else {
+				throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' is not valid");
+			}
+		}
+		if (strpos($value, '(:var)') !== false) {
+			throw new CManager_Controller_Route_Exception("Variable '{$var->name}' for route '{$this->getPageConfig()->name}' must be is array with length " . (count($varValue) + substr_count($value, '(:var)')) . " items");
+		}
+
+		return $value;
 	}
 
 	/**
@@ -144,7 +159,9 @@ class CManager_Controller_Route {
 		// получаем RegExp для проверки url
 		$rule = '^' . trim($this->_route, '/') . '$';
 
-		$ruleVariables = array();
+		// определяем $ruleVariables для правильного порядка (как указано в route/@url)
+		// и для корректного извлечения значений из $url
+		$ruleVariables = /** @var CManager_Controller_Router_Config_RouteVar[] $ruleVariables */ array();
 		if (preg_match_all('~\(:(\w+)\)~', $rule, $ruleMatches)) {
 			foreach($ruleMatches[1] as $varName) {
 				if (!isset($this->_vars[$varName])) {
@@ -153,13 +170,19 @@ class CManager_Controller_Route {
 				if (isset($ruleVariables[$varName])) {
 					throw new CManager_Controller_Route_Exception("Variable {$varName} multiple defined");
 				}
-				$ruleVariables[$varName] = $this->_vars[$varName];
-				$variableTpl = ':' . $varName;
-				$isOptional = isset($ruleVariables[$varName]->default);
-				$variableRule =  $ruleVariables[$varName]->rule;
+
+				$ruleVariables[$varName]	= $this->_vars[$varName];
+				$variableTpl				= ':' . $varName;
+				$isOptional					= $ruleVariables[$varName]->default !== null;
+				$variableRule				= $ruleVariables[$varName]->rule;
+
 				if ($isOptional) {
-					$variableRule = "$variableRule|{$ruleVariables[$varName]->default}|";
+					$default = $ruleVariables[$varName]->pattern !== null
+							? $this->_fillPattern($ruleVariables[$varName], $ruleVariables[$varName]->default)
+							: $ruleVariables[$varName]->default;
+					$variableRule = "$variableRule|{$default}|";
 				}
+
 				$rule = str_replace($variableTpl, $variableRule, $rule);
 			}
 		}

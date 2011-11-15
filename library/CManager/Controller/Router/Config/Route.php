@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @property string $url
+ * @property CManager_Controller_Router_Config_RouteVar[] $var
+ */
 class CManager_Controller_Router_Config_Route extends CManager_Controller_Router_Config_Abstract {
 	protected $_name = 'route';
 	protected $_attributes = array(
@@ -10,7 +14,7 @@ class CManager_Controller_Router_Config_Route extends CManager_Controller_Router
 	);
 	protected $_children = array(
 		'var' => array(
-			'namespace' => self::NAMESPACE_ROUTE_VAR,
+			'namespace' => 'CManager_Controller_Router_Config_RouteVar',
 			'required' => false,
 			'single' => false
 		)

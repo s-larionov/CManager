@@ -1,20 +1,6 @@
 <?php
 
 class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract {
-
-	public $structureMapper = array(
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_PAGE				=> 'CManager_Controller_Router_Config_Page',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_PAGE_NAVIGATION	=> 'CManager_Controller_Router_Config_PageNav',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_PAGE_TITLE		=> 'CManager_Controller_Router_Config_PageTitle',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_PERMISSION		=> 'CManager_Controller_Router_Config_Permission',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_ROUTE				=> 'CManager_Controller_Router_Config_Route',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_ROUTE_VAR			=> 'CManager_Controller_Router_Config_RouteVar',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_STRUCTURE			=> 'CManager_Controller_Router_Config_Structure',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_TAG				=> 'CManager_Controller_Router_Config_Tag',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_TAG_EXCLUSION		=> 'CManager_Controller_Router_Config_TagExclusion',
-		CManager_Controller_Router_Config_Abstract::NAMESPACE_TAG_PARAM			=> 'CManager_Controller_Router_Config_TagParam'
-	);
-
 	/**
 	 * @var string
 	 */

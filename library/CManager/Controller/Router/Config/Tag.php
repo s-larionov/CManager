@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * @property string			$name
+ * @property string|null	$pass
+ * @property string			$namespace
+ * @property string			$mode
+ *
+ * @property CManager_Controller_Router_Config_TagParam[]	$param
+ */
 class CManager_Controller_Router_Config_Tag extends CManager_Controller_Router_Config_Abstract {
 	protected $_name = 'tag';
 	protected $_attributes = array(
@@ -23,7 +31,7 @@ class CManager_Controller_Router_Config_Tag extends CManager_Controller_Router_C
 	);
 	protected $_children = array(
 		'param' => array(
-			'namespace' => self::NAMESPACE_TAG_PARAM,
+			'namespace' => 'CManager_Controller_Router_Config_TagParam',
 			'required' => false,
 			'single' => false
 		)

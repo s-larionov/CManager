@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @property string $mode
+ * @property string|null $value
+ */
 class CManager_Controller_Router_Config_PageTitle extends CManager_Controller_Router_Config_Abstract {
 	protected $_name = 'title';
 	protected $_attributes = array(

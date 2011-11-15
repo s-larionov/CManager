@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @property string $layout
+ *
+ * @property CManager_Controller_Router_Config_Permission[]	$permission
+ * @property CManager_Controller_Router_Config_Tag[]		$tag
+ * @property CManager_Controller_Router_Config_Page[]		$page
+ */
 class CManager_Controller_Router_Config_Structure extends CManager_Controller_Router_Config_Abstract {
 	protected $_name = 'router';
 	protected $_attributes = array(
@@ -10,17 +17,17 @@ class CManager_Controller_Router_Config_Structure extends CManager_Controller_Ro
 	);
 	protected $_children = array(
 		'permission' => array(
-			'namespace' => self::NAMESPACE_PERMISSION,
+			'namespace' => 'CManager_Controller_Router_Config_Permission',
 			'required' => false,
 			'single' => false
 		),
 		'tag' => array(
-			'namespace' => self::NAMESPACE_TAG,
+			'namespace' => 'CManager_Controller_Router_Config_Tag',
 			'required' => false,
 			'single' => false
 		),
 		'page' => array(
-			'namespace' => self::NAMESPACE_PAGE,
+			'namespace' => 'CManager_Controller_Router_Config_Page',
 			'required' => true,
 			'single' => false
 		)
