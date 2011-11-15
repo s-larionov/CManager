@@ -78,10 +78,17 @@ class CManager_Controller_Tag {
 		return $this->_params[$key];
 	}
 
+	/**
+	 * @param CManager_Controller_Router_Config_TagParam|array $params
+	 */
 	protected function _setParams(array $params) {
-		foreach($params as $param) {
-			$name = $param->name;
-			$value = $this->_prepareParam($param);
+		foreach($params as $name => $param) {
+			if ($param instanceof CManager_Controller_Router_Config_TagParam) {
+				$name	= $param->name;
+				$value	= $this->_prepareParam($param);
+			} else {
+				$value	= $param;
+			}
 			if (array_key_exists($name, $this->_params)) {
 				if (!is_array($this->_params[$name]) || !array_key_exists(0, $this->_params[$name])) {
 					$this->_params[$name] = array($this->_params[$name]);

@@ -13,7 +13,7 @@ class CManager_Controller_Router_Config_Tag extends CManager_Controller_Router_C
 	protected $_attributes = array(
 		'name' => array(
 			'namespace' => 'string',
-			'required' => true
+			'required' => false
 		),
 		'pass' => array(
 			'namespace' => 'enum(pass)',
