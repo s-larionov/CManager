@@ -210,9 +210,11 @@ class CManager_Controller_Route {
 	protected function _prepareVariable($value, CManager_Controller_Router_Config_RouteVar $config) {
 		$value = urldecode($value);
 		if (empty($value) && $config->default !== null) {
-			$value = $config->default;
+			$value = $config->pattern !== null
+					? $this->_fillPattern($config, $config->default)
+					: $config->default;
 		}
-		$rawValue = $value;
+
 		if ($config->pattern !== null) {
 			if (preg_match('~^' . str_replace('~', '\\~', $config->pattern) . '$~', $value, $match)) {
 				unset($match[0]);
@@ -251,7 +253,8 @@ class CManager_Controller_Route {
 			case $namespace == 'string':
 				break;
 			case class_exists($namespace) && $value !== null:
-				$value = CManager_Helper_Object::newInstance(
+				$rawValue = $value;
+				$value = /** @var CManager_Controller_Route_Var_Abstract $value */ CManager_Helper_Object::newInstance(
 					$namespace,
 					'CManager_Controller_Route_Var_Abstract',
 					array($value)

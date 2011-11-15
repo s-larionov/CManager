@@ -80,6 +80,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 
 	/**
 	 * Инициализация страницы. Для переопределения в дочерних страницах
+	 * @return void
 	 */
 	public function init() {}
 
