@@ -65,7 +65,13 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 		$page->sendHeaders();
 		$page->runTagsByMode(CManager_Controller_Tag::MODE_BACKGROUND);
 		if ($request->hasRequestTag()) {
-			$content = $page->runTagsByName($request->getRequestTag());
+			if ($page->hasTagsByName($request->getRequestTag(), CManager_Controller_Tag::MODE_NORMAL)) {
+				$content = $page->runTagsByName($request->getRequestTag(), CManager_Controller_Tag::MODE_NORMAL);
+			} else {
+				$router = $this->getRouter();
+				$router->setPage($router->createPageByCode(404));
+				$content = $router->getPage()->render();
+			}
 		} else {
 			$content = $page->render();
 		}

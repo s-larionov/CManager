@@ -48,7 +48,7 @@ class CManager_Controller_Request_Http extends CManager_Controller_Request_Abstr
 	/**
 	 *	Используется для вызова конкретного тэга текущего урла, без использования
 	 *	разметки т.п. вещей. Т.е. результатом работы приложения будет вызов этого тэга.
-	 *	
+	 *
 	 *	@see CManager_Controller_Front
 	 *	@var string
 	 */
@@ -56,11 +56,11 @@ class CManager_Controller_Request_Http extends CManager_Controller_Request_Abstr
 
 	/**
 	 *	Знак разделяющий $_requestTag и $_requestUri;
-	 *	
+	 *
 	 *	@see CManager_Controller_Front
 	 *	@var string
 	 */
-	protected $_RTSeparator = 'call~';
+	protected $_RTSeparator = ':';
 
 	/**
 	 *	@var string

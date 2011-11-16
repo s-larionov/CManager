@@ -207,6 +207,22 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	}
 
 	/**
+	 * Возвращает есть ли теги с указанным именем и @mode
+	 *
+	 * @param string $name
+	 * @param string $mode
+	 * @return array
+	 */
+	public function hasTagsByName($name, $mode = null) {
+		foreach ($this->getTags() as $tag) {
+			if ($tag->name === $name && ($mode === null || $mode === $tag->mode)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Возвращает первый найденный тэг с именем $name
 	 *
 	 * @param string $name
@@ -228,10 +244,8 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	public function runTagsByName($name, $mode = null) {
 		$out = '';
 
-		foreach ($this->getTags() as $tag) {
-			if ($tag->name === $name && ($mode === null || $mode === $tag->mode)) {
-				$out .= $this->_runTag($tag);
-			}
+		foreach ($this->getTagsByName($name, $mode) as $tag) {
+			$out .= $this->_runTag($tag);
 		}
 
 		return $out;

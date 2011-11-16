@@ -12,7 +12,7 @@ class CManager_Helper_File {
 			? $dirs->toArray()
 			: (!is_array($dirs)? array($dirs): $dirs);
 
-		$result = false;
+		$result = null;
 		foreach ($dirs as $dir) {
 			$fullPath = rtrim($dir, '/'). '/'. ltrim($file, '/');
 			if (file_exists($fullPath)) {
@@ -22,7 +22,7 @@ class CManager_Helper_File {
 		}
 
 		if (!$result && $throw) {
-			throw new cm_Exception("Файл '$file' не найден.");
+			throw new CManager_Exception("Файл '$file' не найден.");
 		}
 
 		return $result;

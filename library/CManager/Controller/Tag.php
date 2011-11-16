@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @property string $name
+ * @property string $namespace
+ * @property string $mode
+ * @property CManager_Controller_Router_Config_TagParam[] $params
+ * @property CManager_Controller_Action_Abstract $controller
+ */
 class CManager_Controller_Tag {
 	const MODE_NORMAL		= 'normal';
 	const MODE_BACKGROUND	= 'background';

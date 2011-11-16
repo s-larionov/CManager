@@ -28,14 +28,17 @@ class Mods_Content extends CManager_Controller_Action_Abstract {
 	protected function _getContent($file) {
 		$ext = preg_replace("~^.*\\.([^\\.]+)$~", '$1', $file);
 		switch($ext) {
-			case 'php': case 'inc':
+			case 'php':
+			case 'inc':
 				ob_start();
 				include $file;
 				return ob_get_clean();
-			break;
-			case 'xhtml': case 'html': case 'txt':
+				break;
+			case 'xhtml':
+			case 'html':
+			case 'txt':
 				return file_get_contents($file);
-			break;
+				break;
 		}
 		return '';
 	}

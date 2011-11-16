@@ -56,30 +56,36 @@ class CManager_Display {
 	}
 
 	/**
+	 * Если не передан первый аргумент (или передан false),
+	 * то будет сгенерирована ссылка на текущую страницу с текущими параметрами.
+	 * Параметры можно переопределять.
+	 *
 	 * @static
-	 * @param string $name
+	 * @param bool|string $name
 	 * @param array $params
 	 * @return string
 	 */
-	public static function url($name, array $params = array()) {
+	public static function url($name = false, array $params = array()) {
+		$router = self::getApplication()->getRouter();
+		if ($name === false) {
+			$page = $router->getPage();
+			return $page->getRoute()->generateUrl(array_merge($page->getVariables(), $params));
+		}
+
 		return self::getApplication()->getRouter()->generateUrl($name, $params);
 	}
 
 	/**
 	 * @static
-	 * @param string $name
-	 * @internal param array $param1
-	 * @internal param array $param1Value
-	 * @internal param array $param2
-	 * @internal param array $param2Value
-	 * @internal ...
+	 * @param bool|string $name
 	 * @return string
+	 * @see CManager_Display::url
 	 */
-	public static function urlFromXsl($name) {
+	public static function urlFromXsl($name = false) {
 		$params = array();
 		for($i = 1, $count = func_num_args(); $i < $count; $i += 2) {
 			$params[(string) func_get_arg($i)] = func_get_arg($i + 1);
 		}
-		return self::getApplication()->getRouter()->generateUrl($name, $params);
+		return self::url($name, $params);
 	}
 }
