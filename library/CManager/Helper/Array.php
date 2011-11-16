@@ -15,4 +15,28 @@ class CManager_Helper_Array {
 		}
 		return true;
 	}
+
+	/**
+	 * @static
+	 * @param array $array
+	 * @param array $keyValueData
+	 * @return array|null
+	 */
+	public static function findArrayItem(array $array, array $keyValueData) {
+		foreach($array as $item) {
+			if (!is_array($item)) {
+				throw new CManager_Exception('Item is not array');
+			}
+			foreach($keyValueData as $key => $value) {
+				if (!array_key_exists($key, $item)) {
+					throw new CManager_Exception("Offset '{$key}' doesn't exists in item");
+				}
+				if ($item[$key] != $value) {
+					continue 2;
+				}
+				return $item;
+			}
+		}
+		return null;
+	}
 }
