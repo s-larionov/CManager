@@ -94,18 +94,21 @@ class CManager_Controller_Route {
 				if (is_object($vars[$var->name]) && $vars[$var->name] instanceof CManager_Controller_Route_Var_Abstract) {
 					$value = $vars[$var->name]->getRawValue();
 				} else {
-					if ($var->explode !== null && is_array($vars[$var->name])) {
-						// если у переменной указан @explode, то собираем массив
-						$value = implode($var->explode, $vars[$var->name]);
-					} else {
-						$value = (string) $vars[$var->name];
-					}
+					$value = $vars[$var->name];
 				}
 			} else if ($var->default !== null) {
 				// если переменная не передана, но у нее есть значение по-умолчанию, то подставляем его
 				$value = $var->default;
  			} else {
 				throw new CManager_Controller_Route_Exception("Not all required parameters for route '{$this->getPageConfig()->name}' passed");
+			}
+
+			// если у переменной указан @explode, то собираем массив
+			if ($var->explode !== null && is_array($value)) {
+				$value = implode($var->explode, $value);
+			} else {
+				// иначе преобразовываем на всякий случай в строку
+				$value = (string) $value;
 			}
 
 			// если у переменной указан @pattern, то пытаемся ее собрать в "оригинал"

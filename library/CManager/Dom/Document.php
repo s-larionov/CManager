@@ -110,12 +110,11 @@ class CManager_Dom_Document extends DOMDocument {
 	 * @return string
 	 * @throws CManager_Dom_Exception
 	 */
-	public function xslTransform($xslFiles, $options = array(), $includes = array(), $xmlContent = false, $showDTD = false) {
+	public function xslTransform($xslFiles, array $options = array(), array $includes = array(), $xmlContent = false, $showDTD = false) {
 		$transformed = false;
 
 		foreach ((array) $xslFiles as $xslFile) {
 			if (!file_exists($xslFile)) {
-
 				throw new CManager_Dom_Exception("Файл {$xslFile} не найден.");
 			}
 
@@ -145,12 +144,10 @@ class CManager_Dom_Document extends DOMDocument {
 			}
 
 			$proc = new XSLTProcessor();
-
 			$proc->registerPHPFunctions();
-
 			$proc->importStyleSheet($xslDoc);
 
-			foreach ((array)$options as $name => $value) {
+			foreach ($options as $name => $value) {
 				$proc->setParameter('', $name, $value);
 			}
 
@@ -187,7 +184,7 @@ class CManager_Dom_Document extends DOMDocument {
 	 * @return string
 	 */
 	public static function xslTransformSource($xslFiles, $xmlContent = false, $options = array(), $includes = array(), $showDTD = false) {
-		return CManager_Dom_Document::xslTransform($xslFiles, $options, $includes, $xmlContent, $showDTD);
+		return static::xslTransform($xslFiles, $options, $includes, $xmlContent, $showDTD);
 	}
 
 	/**

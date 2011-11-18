@@ -2,7 +2,7 @@
 
 abstract class CManager_Controller_Route_Var_Abstract {
 	/**
-	 * @var string
+	 * @var string|string[]
 	 */
 	protected $_rawValue = null;
 
@@ -18,10 +18,10 @@ abstract class CManager_Controller_Route_Var_Abstract {
 	abstract public function isValidRouteVariable();
 
 	/**
-	 * @param $rawValue
+	 * @param string|string[] $rawValue
 	 */
 	public function setRawValue($rawValue) {
-		$this->_rawValue = (string) $rawValue;
+		$this->_rawValue = $rawValue;
 	}
 
 	/**
