@@ -56,7 +56,8 @@ class CManager_Helper_Xml {
 		$config = array_merge(array(
 				'rowElementName'	=> 'row',
 				'keysAsElements'	=> null,
-				'elementAttributes'	=> array()
+				'elementAttributes'	=> array(),
+				'inheritConfig'		=> false
 			), $config);
 
 		$xml = '';
@@ -82,9 +83,9 @@ class CManager_Helper_Xml {
 			}
 
 			if ($config['keysAsElements']) {
-				$xml .= self::parse($key, $row, $elementAttributesValues);
+				$xml .= self::parse($key, $row, $elementAttributesValues, $config['inheritConfig']? $config: array());
 			} else {
-				$xml .= self::parse($config['rowElementName'], $row, array_merge(array('key' => $key), $elementAttributesValues));
+				$xml .= self::parse($config['rowElementName'], $row, array_merge(array('key' => $key), $elementAttributesValues), $config['inheritConfig']? $config: array());
 			}
 		}
 		return $xml;

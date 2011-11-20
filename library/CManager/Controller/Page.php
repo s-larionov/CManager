@@ -477,7 +477,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 
 	/**
 	 * @param string $name
-	 * @return mixed
+	 * @return mixed|CManager_Controller_Route_Var_Abstract
 	 */
 	final public function getVariable($name) {
 		if (array_key_exists($name, $this->_variables)) {

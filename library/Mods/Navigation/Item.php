@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @property string $name
+ * @property string $title
+ * @property string $url
+ * @property boolean $here
+ * @property boolean $current
+ */
 class Mods_Navigation_Item {
 	/**
 	 * @var string
@@ -93,10 +100,6 @@ class Mods_Navigation_Item {
 		}
 
 		$this->_data[$name] = $value;
-		if ($this->_navigationName == 'right') {
-//			var_dump($name);
-//			var_dump($value);
-		}
 		return $this;
 	}
 

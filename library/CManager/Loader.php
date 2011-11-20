@@ -39,7 +39,7 @@ class CManager_Loader {
 		$path = $name .'.php';
 
 		// ловим Warnings на отсутствие файла, но Fatal Error будут происходить все равно
-		set_error_handler(array(__CLASS__, '_loadFileErrorHandler')); // Warnings and errors are suppressed
+		set_error_handler(array(__CLASS__, 'loadFileErrorHandler')); // Warnings and errors are suppressed
 		if (!include_once($path)) {
 			restore_error_handler();
 			throw new CManager_Loader_Exception("Loading file {$path} error");
@@ -60,5 +60,5 @@ class CManager_Loader {
 	 * @param string $errfile
 	 * @param integer $errline
 	 */
-	protected static function _loadFileErrorHandler($errno, $errstr, $errfile, $errline) {}
+	public static function loadFileErrorHandler($errno, $errstr, $errfile, $errline) {}
 }
