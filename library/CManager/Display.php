@@ -69,7 +69,7 @@ class CManager_Display {
 		$router = self::getApplication()->getRouter();
 		if ($name === false) {
 			$page = $router->getPage();
-			return $page->getRoute()->generateUrl(array_merge($page->getVariables(), $params));
+			return $page->getRoute()->generateUrl(array_merge($page->getVariables(), $params), false);
 		}
 
 		return self::getApplication()->getRouter()->generateUrl($name, $params);

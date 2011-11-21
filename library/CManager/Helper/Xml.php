@@ -2,11 +2,11 @@
 
 class CManager_Helper_Xml {
 	/**
-	 * @param string  $element	   Название _Xml-элемента
-	 * @param mixed   $value		 Значение элемента
-	 * @param array   $elementAttrs  Аттрибуты элемента
-	 * @param array $config
-	 * @return string				_Xml-строка
+	 * @param string	$element		Название Xml-элемента
+	 * @param mixed		$value			Значение элемента
+	 * @param array		$elementAttrs	Аттрибуты элемента
+	 * @param array		$config
+	 * @return string					Xml-строка
 	 */
 	public static function parse($element, $value, array $elementAttrs = array(), array $config = array()) {
 		switch (true) {
@@ -68,7 +68,7 @@ class CManager_Helper_Xml {
 			throw new CManager_Exception("Can't generate xml with named items for numbered array");
 		}
 
-		foreach($array as $key => $row) {
+		foreach($array as $key => &$row) {
 			$elementAttributesValues = array();
 			if (!empty($config['elementAttributes']) && is_array($row)) {
 				foreach($config['elementAttributes'] as $attr) {
