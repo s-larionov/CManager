@@ -114,7 +114,11 @@ class CManager_Controller_Tag {
 	protected function _prepareParam(CManager_Controller_Router_Config_TagParam $param) {
 		$result = array();
 		if (count($param->param) == 0) {
-			return $param->value;
+			$value = $param->value;
+			if (defined($value)) {
+				$value = constant($value);
+			}
+			return $value;
 		}
 		foreach($param->param as $subParam) {
 			if (count($subParam->param) > 0) {
