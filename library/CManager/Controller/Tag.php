@@ -186,12 +186,11 @@ class CManager_Controller_Tag {
 	 * @return array
 	 */
 	public function toArray() {
-		$params = clone($this->_params);
 		return array(
 			'name'		=> $this->_name,
 			'namespace'	=> $this->_namespace,
 			'mode'		=> $this->_mode,
-			'params'	=> $params->toArray()
+			'params'	=> $this->_params
 		);
 	}
 

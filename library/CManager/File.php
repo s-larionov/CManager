@@ -52,7 +52,7 @@ class CManager_File implements CManager_File_Interface {
 	 * @throws CManager_File_Exception
 	 */
 	public function save() {
-		if (!is_writable($this->getFilename())) {
+		if (!$this->isWritable() ) {
 			throw new CManager_File_Exception("File {$this->getFilename()} is not writable");
 		}
 		file_put_contents($this->getFilename(), $this->getContent());
@@ -64,10 +64,24 @@ class CManager_File implements CManager_File_Interface {
 	 * @throws CManager_File_Exception
 	 */
 	public function load() {
-		if (!is_readable($this->getFilename())) {
+		if (!$this->isReadable()) {
 			throw new CManager_File_Exception("File {$this->getFilename()} is not readable");
 		}
 		return file_get_contents($this->getFilename());
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isReadable() {
+		return is_readable($this->getFilename());
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isWritable() {
+		return is_writable($this->getFilename());
 	}
 
 	/**
@@ -82,6 +96,13 @@ class CManager_File implements CManager_File_Interface {
 	 */
 	public function getFilename() {
 		return $this->_filename;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMimeType() {
+		return mime_content_type($this->getFilename());
 	}
 }
 

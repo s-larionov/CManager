@@ -60,6 +60,7 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 		}
 
 		$this->getRouter()->run();
+		CManager_Display::setApplication(CManager_Registry::getFrontController());
 
 		$page = $this->getRouter()->getPage();
 		$page->sendHeaders();

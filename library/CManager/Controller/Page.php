@@ -315,7 +315,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 			}
 
 			ob_start();
-			CManager_Display::setApplication(CManager_Registry::getFrontController());
 			include $layout;
 			return ob_get_clean();
 		} catch (Exception $e) {
