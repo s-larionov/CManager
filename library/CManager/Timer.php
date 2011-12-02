@@ -44,9 +44,17 @@ class CManager_Timer {
 
 	/**
 	 * @static
-	 * @param string $label
+	 * @param string|null $label
 	 */
-	public static function dump($label = '') {
-		Zend_Debug::dump(CManager_Helper_Number::format(self::get($label) * 1000, 2, ' ', '.') . ' msec', $label, true);
+	public static function dump($label = null) {
+		if ($label === null) {
+			$dump = array();
+			foreach(self::$_timers as $timerLabel => $timer) {
+				$dump[$timerLabel] = CManager_Helper_Number::format(self::get($timerLabel) * 1000, 2, ' ', '.') . ' msec';
+			}
+			Zend_Debug::dump($dump, __CLASS__, true);
+		} else {
+			Zend_Debug::dump(CManager_Helper_Number::format(self::get($label) * 1000, 2, ' ', '.') . ' msec', $label, true);
+		}
 	}
 }

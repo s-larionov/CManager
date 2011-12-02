@@ -24,7 +24,7 @@ class CManager_Structure_Adapter_Xml extends CManager_Structure_Adapter_Abstract
 	 */
 	public function getListAttributes($element) {
 		$list = array();
-		foreach($element->attributes() as $attribute) {
+		foreach($element->attributes() as /** @var SimpleXMLElement $attribute */ $attribute) {
 			$list[] = $attribute->getName();
 		}
 		return $list;

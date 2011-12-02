@@ -15,6 +15,7 @@ class CManager_Controller_Router_Config_Structure extends CManager_Controller_Ro
 			'required' => true
 		)
 	);
+
 	protected $_children = array(
 		'permission' => array(
 			'namespace' => 'CManager_Controller_Router_Config_Permission',

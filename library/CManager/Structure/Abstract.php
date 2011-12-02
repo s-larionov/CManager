@@ -1,9 +1,17 @@
 <?php
 
 abstract class CManager_Structure_Abstract {
+	/**
+	 * Название аттрибута у элемента, который говорит, что он наследуется для всех дочерних элеметов (для такого же элеметнта)
+	 * Например, наследование тегов
+	 */
 	const PASS_ATTRIBUTE			= 'pass';
+
+	/**
+	 * Префикс для классов дочерних элеметнов. Например, в $this->_children указан элемент с namespace = 'Child',
+	 * но полностью класс называется CManager_Structure_Child. "CManager_Structure_" выносим в namespace.
+	 */
 	const NAMESPACE_PREFIX			= '';
-	const MODE_LOAD_ALL_ATTRIBUTES	= '__ALL__';
 
 	protected $_name = '';
 	/**
@@ -43,6 +51,11 @@ abstract class CManager_Structure_Abstract {
 	protected $_adapter = null;
 
 	/**
+	 * @var mixed
+	 */
+	protected $_element = null;
+
+	/**
 	 * @param mixed $config
 	 * @param CManager_Structure_Adapter_Abstract $adapter
 	 * @param CManager_Structure_Abstract|null $parent
@@ -50,8 +63,10 @@ abstract class CManager_Structure_Abstract {
 	public function __construct($config, CManager_Structure_Adapter_Abstract $adapter, CManager_Structure_Abstract $parent = null) {
 		$this->_adapter	= $adapter;
 		$this->_parent	= $parent;
-		$this->_parseAttributes($config);
-		$this->_parseChildren($config);
+		$this->_element	= $config;
+
+		$this->_parseAttributes();
+		$this->_parseChildren();
 	}
 
 	/**
@@ -62,24 +77,18 @@ abstract class CManager_Structure_Abstract {
 	}
 
 	/**
-	 * @param mixed $element
 	 * @throws CManager_Structure_Exception
 	 */
-	protected function _parseAttributes($element) {
-		if ($loadAllAttributes = array_key_exists(self::MODE_LOAD_ALL_ATTRIBUTES, $this->_attributes)) {
-			unset($this->_attributes[self::MODE_LOAD_ALL_ATTRIBUTES]);
-		}
-
-		foreach ($this->_attributes as $field => $config) {
+	protected function _parseAttributes() {
+		foreach ($this->getAttributes() as $field => $config) {
 			$config	= $this->_extendConfig($config);
-			$value	= $this->getAdapter()->getAttribute($element, $field);
+			$value	= $this->getAdapter()->getAttribute($this->getElement(), $field);
 
 			if ($config['required'] === true && $value === null) {
 				throw new CManager_Structure_Exception("@{$field} is required for {$this}");
 			}
-			if (!$config['single']) {
-				throw new CManager_Structure_Exception("@{$field} can't be multiple in {$this}");
-			}
+			// атрибут может быть только один
+			$config['single'] = true;
 
 			$this->_set($field, $this->_createValue($value, $config, true));
 			$this->_attributes[$field] = $config;
@@ -89,32 +98,15 @@ abstract class CManager_Structure_Abstract {
 		foreach($this->_attributes as $field => $config) {
 			$this->_tryInheritAttribute($field, $config);
 		}
-
-		// загружаем неописанные аттрибуты, если указано загружать все.
-		if ($loadAllAttributes) {
-			$config	= $this->_extendConfig(array(
-				'namespace' => 'string',
-				'single' => true
-			));
-			foreach($this->getAdapter()->getListAttributes($element) as $field) {
-				if (array_key_exists($field, $this->_data)) {
-					continue;
-				}
-				$value = $this->getAdapter()->getAttribute($element, $field);
-				$this->_set($field, $this->_createValue($value, $config, true));
-				$this->_attributes[$field] = $config;
-			}
-		}
 	}
 
 	/**
-	 * @param mixed $element
 	 * @throws CManager_Structure_Exception
 	 */
-	protected function _parseChildren($element) {
+	protected function _parseChildren() {
 		foreach($this->_children as $field => $config) {
 			$config	= $this->_extendConfig($config);
-			$value	= $this->getAdapter()->getChild($element, $field);
+			$value	= $this->getAdapter()->getChild($this->getElement(), $field);
 
 			if ($config['required'] === true && $value === null) {
 				throw new CManager_Structure_Exception("Child '{$field}' is required");
@@ -222,6 +214,7 @@ abstract class CManager_Structure_Abstract {
 		while ($parent = $parent->getParent()) {
 			$attribute = $parent->$field;
 			if ($attribute !== null) {
+				// todo: проверка на дефолтное значение
 				$this->_set($field, $attribute);
 				return;
 			}
@@ -325,7 +318,6 @@ abstract class CManager_Structure_Abstract {
 			$value = $config['default'];
 			$onlyScalar = true;
 		}
-
 		if (!$config['single']) {
 			if (!is_array($value)) {
 				$value = array($value);
@@ -364,8 +356,12 @@ abstract class CManager_Structure_Abstract {
 				if (is_array($value)) {
 					throw new CManager_Structure_Exception("Value for {$config['namespace']} is array");
 				}
-				$config['namespace'] = static::NAMESPACE_PREFIX . $config['namespace'];
-				$value = new $config['namespace']($value, $this->getAdapter(), $this);
+
+				$value = CManager_Helper_Object::newInstance(
+					static::NAMESPACE_PREFIX . $config['namespace'],
+					__CLASS__,
+					array($value, $this->getAdapter(), $this)
+				);
 				break;
 			default:
 				throw new CManager_Structure_Exception("Namespace {$config['namespace']} not defined");
@@ -438,6 +434,9 @@ abstract class CManager_Structure_Abstract {
 		return $this;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function __toString() {
 		$name = $this->name;
 		return $this->getName() . ($name !== null? "[{$name}]": '');
@@ -456,7 +455,7 @@ abstract class CManager_Structure_Abstract {
 	public function __wakeup() {
 		foreach($this->_data as &$item) {
 			if (is_array($item)) {
-				foreach($item as &$arrayItem) {
+				foreach($item as /** @var CManager_Structure_Abstract $arrayItem */ &$arrayItem) {
 					if ($item instanceof self) {
 						$arrayItem->setParent($this);
 					}
@@ -467,5 +466,19 @@ abstract class CManager_Structure_Abstract {
 				$item->setParent($this);
 			}
 		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAttributes() {
+		return $this->_attributes;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getElement() {
+		return $this->_element;
 	}
 }
