@@ -42,7 +42,7 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 			throw new CManager_Controller_Router_Xml_Exception($this->_loadFileErrorStr);
 		}
 
-		return new CManager_Controller_Router_Config_Structure($xml, new CManager_Structure_Adapter_Xml());
+		return new CManager_Controller_Router_Config_Structure(new CManager_Structure_Adapter_Xml($xml));
 	}
 
 	/**

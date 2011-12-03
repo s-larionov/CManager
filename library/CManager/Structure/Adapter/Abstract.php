@@ -3,24 +3,21 @@
 abstract class CManager_Structure_Adapter_Abstract {
 	/**
 	 * @abstract
-	 * @param mixed $element
 	 * @param string $attributeName
 	 * @return string|null
 	 */
-	abstract public function getAttribute($element, $attributeName);
+	abstract public function getAttribute($attributeName);
 
 	/**
 	 * @abstract
-	 * @param mixed $element
 	 * @return string[]
 	 */
-	abstract public function getListAttributes($element);
+	abstract public function getListAttributes();
 
 	/**
 	 * @abstract
-	 * @param mixed $element
 	 * @param string $childName
-	 * @return array
+	 * @return CManager_Structure_Adapter_Abstract[]|CManager_Structure_Adapter_Abstract|null
 	 */
-	abstract public function getChild($element, $childName);
+	abstract public function getChild($childName);
 }

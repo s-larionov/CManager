@@ -56,14 +56,12 @@ abstract class CManager_Structure_Abstract {
 	protected $_element = null;
 
 	/**
-	 * @param mixed $config
 	 * @param CManager_Structure_Adapter_Abstract $adapter
 	 * @param CManager_Structure_Abstract|null $parent
 	 */
-	public function __construct($config, CManager_Structure_Adapter_Abstract $adapter, CManager_Structure_Abstract $parent = null) {
+	public function __construct(CManager_Structure_Adapter_Abstract $adapter, CManager_Structure_Abstract $parent = null) {
 		$this->_adapter	= $adapter;
 		$this->_parent	= $parent;
-		$this->_element	= $config;
 
 		$this->_parseAttributes();
 		$this->_parseChildren();
@@ -82,7 +80,7 @@ abstract class CManager_Structure_Abstract {
 	protected function _parseAttributes() {
 		foreach ($this->getAttributes() as $field => $config) {
 			$config	= $this->_extendConfig($config);
-			$value	= $this->getAdapter()->getAttribute($this->getElement(), $field);
+			$value	= $this->getAdapter()->getAttribute($field);
 
 			if ($config['required'] === true && $value === null) {
 				throw new CManager_Structure_Exception("@{$field} is required for {$this}");
@@ -106,12 +104,12 @@ abstract class CManager_Structure_Abstract {
 	protected function _parseChildren() {
 		foreach($this->_children as $field => $config) {
 			$config	= $this->_extendConfig($config);
-			$value	= $this->getAdapter()->getChild($this->getElement(), $field);
+			$value	= /** @var CManager_Structure_Adapter_Abstract[] $value */ $this->getAdapter()->getChild($field);
 
 			if ($config['required'] === true && $value === null) {
 				throw new CManager_Structure_Exception("Child '{$field}' is required");
 			}
-			if ($config['single'] && is_array($value) && count($value) > 1) {
+			if ($config['single'] && is_array($value)) {
 				throw new CManager_Structure_Exception("Child '{$field}' should be only one");
 			}
 			if (!$config['single'] && !is_array($value)) {
@@ -304,36 +302,33 @@ abstract class CManager_Structure_Abstract {
 	}
 
 	/**
-	 * @param array|string|null $value
+	 * @param CManager_Structure_Adapter_Abstract[]|CManager_Structure_Adapter_Abstract|string|null $value
 	 * @param array $config
 	 * @param bool $onlyScalar
 	 * @return mixed
 	 * @throws CManager_Structure_Exception
 	 */
 	protected function _createValue($value = null, array $config, $onlyScalar = false) {
-		if ($value === null || (is_array($value) && count($value) == 0 && $config['single'])) {
+		if ($value === null) {
 			if ($config['default'] === null) {
 				return null;
 			}
 			$value = $config['default'];
-			$onlyScalar = true;
 		}
+
 		if (!$config['single']) {
-			if (!is_array($value)) {
-				$value = array($value);
-			}
 			$result = array();
-			$config['single'] = true;
+			$itemConfig = array_merge($config, array('single' => true));
 			foreach($value as $item) {
-				$result[] = $this->_createValue($item, $config, $onlyScalar);
+				$result[] = $this->_createValue($item, $itemConfig, $onlyScalar);
 			}
 			return $result;
 		}
 
 		switch(true) {
 			case strpos($config['namespace'], 'enum') === 0:
-				$enumValues = explode(',', substr($config['namespace'], 5, -1));
-				$value = (string) $value;
+				$enumValues	= explode(',', substr($config['namespace'], 5, -1));
+				$value		= (string) $value;
 				if (!in_array($value, $enumValues)) {
 					throw new CManager_Structure_Exception("Value '{$value}' not in {$config['namespace']}");
 				}
@@ -353,14 +348,14 @@ abstract class CManager_Structure_Abstract {
 				$value = (string) $value;
 				break;
 			case !$onlyScalar && class_exists(static::NAMESPACE_PREFIX . $config['namespace']):
-				if (is_array($value)) {
-					throw new CManager_Structure_Exception("Value for {$config['namespace']} is array");
+				if (!$value instanceof CManager_Structure_Adapter_Abstract) {
+					throw new CManager_Structure_Exception("Value for {$config['namespace']} must instanceof CManager_Structure_Adapter_Abstract");
 				}
 
 				$value = CManager_Helper_Object::newInstance(
 					static::NAMESPACE_PREFIX . $config['namespace'],
 					__CLASS__,
-					array($value, $this->getAdapter(), $this)
+					array($value, $this)
 				);
 				break;
 			default:
