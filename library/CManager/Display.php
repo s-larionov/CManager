@@ -88,4 +88,17 @@ class CManager_Display {
 		}
 		return self::url($name, $params);
 	}
+
+	/**
+	 * @static
+	 * @param string $name
+	 * @return string
+	 */
+	public static function getPageVar($name) {
+		$result = self::getApplication()->getRouter()->getPage()->getVariable($name);
+		if ($result instanceof CManager_Controller_Route_Var_Abstract) {
+			$result = $result->getRawValue();
+		}
+		return (string) $result;
+	}
 }
