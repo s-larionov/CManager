@@ -49,7 +49,7 @@ class CManager_Controller_Abstract extends CManager_EventEmitter {
 	}
 
 	/**
-	 * @return CManager_Controller_Response_Abstract
+	 * @return CManager_Controller_Response_Abstract|CManager_Controller_Response_Http
 	 */
 	public function getResponse() {
 		return $this->_response;
