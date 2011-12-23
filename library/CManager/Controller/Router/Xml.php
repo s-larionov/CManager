@@ -33,7 +33,9 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 			throw new CManager_Controller_Router_Exception("File '{$this->_xmlFile}' not found");
 		}
 
-		set_error_handler(array($this, '_loadFileErrorHandler')); // Warnings and errors are suppressed
+		CManager_Timer::start('generate structure');
+		
+		set_error_handler(array($this, 'loadFileErrorHandler')); // Warnings and errors are suppressed
 		$xml = simplexml_load_file($this->_xmlFile);
 		restore_error_handler();
 
@@ -53,7 +55,7 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 	 * @param string $errfile
 	 * @param integer $errline
 	 */
-	protected function _loadFileErrorHandler($errno, $errstr, $errfile, $errline) {
+	public function loadFileErrorHandler($errno, $errstr, $errfile, $errline) {
 		if ($this->_loadFileErrorStr === null) {
 			$this->_loadFileErrorStr = $errstr;
 		} else {
