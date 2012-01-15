@@ -2,66 +2,23 @@
 
 class CManager_Cache_Storage_File extends CManager_Cache_Storage_Abstract {
 	/**
-	 * @param string $key
-	 * @param null $time
-	 * @return mixed
+	 * @var string|null
 	 */
-	public function load($key, $time = null) {
-		if (!$time) {
-			$time = time();
-		}
-		$key = $this->_prepareKey($key);
-		$fileName = $this->_getFileName($key);
-		if (!file_exists($fileName)) {
-			return false;
-		}
-		
-		$cacheContent = file_get_contents($fileName);
-		
-		list($cacheProps, $cacheContent) = explode("\n", $cacheContent, 2);
-		$cacheProps = explode('|', $cacheProps);
-
-		// ttl
-		if (isset($cacheProps[0]) && (int)$cacheProps[0] < $time) {
-			return false;
-		}
-
-		// format
-		if (isset($cacheProps[1])) {
-			switch($cacheProps[1]) {
-				// serialized
-				case 's':
-					$cacheContent = @unserialize($cacheContent);
-					break;
-			}
-		}
-
-		return $cacheContent;
-	}
+	protected $_directory = null;
 
 	/**
 	 * @param string $key
 	 * @param mixed $data
-	 * @param int $ttl
+	 * @param int|null $ttl
+	 * @param string|null $validateHash
 	 * @return mixed
 	 */
-	public function save($key, $data, $ttl = null) {
-		if ($ttl === null) {
-			$ttl = $this->_getDefaultTtl();
-		}
-		$key = $this->_prepareKey($key);
-		$cacheProps = array();
-
-		$cacheProps[0] = time() + $ttl;
-		$cacheProps[1] = is_object($data) || is_array($data) ? 's' : '';
-
-		if ($cacheProps[1] == 's') {
-			$data = @serialize($data);
-		}
-
-		$data = implode('|', $cacheProps) ."\n". $data;
-
-		file_put_contents($this->_getFileName($key), $data);
+	public function save($key, $data, $ttl = null, $validateHash = null) {
+		if (!($expiredTime = $this->_getCacheExpiredTime($ttl))) {
+			return $data;
+		};
+		$file = new CManager_File($this->_getFileName($this->_prepareKey($key)));
+		$file->setContent($this->_packContent($data, $expiredTime, $validateHash), true);
 		return $data;
 	}
 
@@ -70,35 +27,18 @@ class CManager_Cache_Storage_File extends CManager_Cache_Storage_Abstract {
 	 * @return boolean
 	 */
 	public function delete($key) {
-		return @unlink($this->_getFileName($this->_prepareKey($key)));
+		$file = new CManager_File($this->_getFileName($this->_prepareKey($key)));
+		return $file->delete();
 	}
 
 	/**
-	 * @param string $key
-	 * @return mixed
+	 * @return string
 	 */
-	public function read($key) {
-		$key = $this->_prepareKey($key);
-		$fileName = $this->_getFileName($key);
-		if (!file_exists($fileName)) {
-			return false;
+	public function getDirectory() {
+		if ($this->_directory === null) {
+			$this->_directory = array_key_exists('dir', $this->_config)? rtrim($this->_config['dir'], '/') . '/': '';
 		}
-		$cacheContent = file_get_contents($fileName);
-
-		list($cacheProps, $cacheContent) = explode("\n", $cacheContent, 2);
-		$cacheProps = explode('|', $cacheProps);
-
-		// format
-		if (isset($cacheProps[1])) {
-			switch($cacheProps[1]) {
-				// serialized
-				case 's':
-					$cacheContent = @unserialize($cacheContent);
-					break;
-			}
-		}
-
-		return $cacheContent;
+		return $this->_directory;
 	}
 
 	/**
@@ -106,8 +46,19 @@ class CManager_Cache_Storage_File extends CManager_Cache_Storage_Abstract {
 	 * @return string
 	 */
 	protected function _getFileName($key) {
-		$key = str_replace('/', '[~]', $key);
-		return (isset($this->_config['dir'])? $this->_config['dir']: '') . 'cmanager-cache-'. $key;
+		$key = str_replace('/', '~', trim($key, '/'));
+		return "{$this->getDirectory()}{$key}";
 	}
 
+	/**
+	 * @param string $key
+	 * @return array|bool
+	 */
+	protected function _get($key) {
+		$file = new CManager_File($this->_getFileName($this->_prepareKey($key)));
+		if (!$file->exists() || !$file->isReadable()) {
+			return false;
+		}
+		return $this->_unpackContent($file->getContent());
+	}
 }

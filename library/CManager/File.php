@@ -67,7 +67,8 @@ class CManager_File implements CManager_File_Interface {
 		if (!$this->isReadable()) {
 			throw new CManager_File_Exception("File {$this->getFilename()} is not readable");
 		}
-		return file_get_contents($this->getFilename());
+		$this->_content = file_get_contents($this->getFilename());
+		return $this;
 	}
 
 	/**
@@ -81,7 +82,7 @@ class CManager_File implements CManager_File_Interface {
 	 * @return bool
 	 */
 	public function isWritable() {
-		return is_writable($this->getFilename());
+		return is_writable($this->getFilename()) || !$this->exists();
 	}
 
 	/**
@@ -103,6 +104,13 @@ class CManager_File implements CManager_File_Interface {
 	 */
 	public function getMimeType() {
 		return mime_content_type($this->getFilename());
+	}
+
+	/**
+	 * @return CManager_File
+	 */
+	public function delete() {
+		return @unlink($this->getFilename());
 	}
 }
 
