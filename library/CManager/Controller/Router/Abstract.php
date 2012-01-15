@@ -25,7 +25,7 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	protected $_pageResolver = null;
 
 	/**
-	 * @var CManager_Controller_Router_Config_Abstract
+	 * @var CManager_Controller_Router_Config_Structure
 	 */
 	protected $_structure = null;
 
@@ -84,7 +84,7 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	abstract protected function _getStructure();
 
 	/**
-	 * @return CManager_Controller_Router_Config_Abstract
+	 * @return CManager_Controller_Router_Config_Structure
 	 */
 	final public function getStructure() {
 		if ($this->_structure === null) {
@@ -94,10 +94,10 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	}
 
 	/**
-	 * @param CManager_Controller_Router_Config_Abstract $structure
+	 * @param CManager_Controller_Router_Config_Structure $structure
 	 * @return CManager_Controller_Router_Abstract
 	 */
-	final public function setStructure(CManager_Controller_Router_Config_Abstract $structure) {
+	final public function setStructure(CManager_Controller_Router_Config_Structure $structure) {
 		$this->_structure = $structure;
 		return $this;
 	}
@@ -134,10 +134,12 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 				$classPage = $pageConfig->namespace;
 			}
 
-			$page = new $classPage($pageConfig, $this->getRequest(), $this->getResponse());
-			if (!($page instanceof CManager_Controller_Page)) {
-				throw new CManager_Controller_Router_Exception("{$classPage} must be inherited from CManager_Controller_Page");
-			}
+			$page = /** @var CManager_Controller_Page $page */ CManager_Helper_Object::newInstance(
+				$classPage,
+				'CManager_Controller_Page',
+				array($pageConfig, $this->getRequest(), $this->getResponse())
+			);
+
 			$page->setRoute($routes[$pageName])
 				->setVariables($variables)
 				->init();
@@ -165,6 +167,7 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	}
 
 	/**
+	 * @param string|null $name
 	 * @return CManager_Controller_Route[]|CManager_Controller_Route
 	 */
 	public function getRoutes($name = null) {

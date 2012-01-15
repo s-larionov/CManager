@@ -17,8 +17,8 @@ class CManager_Helper_Object {
 		}
 
 		$reflection = new ReflectionClass($className);
-		if ($parentClassName !== null && !$reflection->isSubclassOf($parentClassName)) {
-			throw new CManager_Exception("Object must be subclass of {$parentClassName}");
+		if ($parentClassName !== null && !$reflection->isSubclassOf($parentClassName) && $reflection->getName() != $parentClassName) {
+			throw new CManager_Exception("Object must be inheritance of {$parentClassName}");
 		}
 
 		return $reflection->newInstanceArgs($arguments);

@@ -59,12 +59,21 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 			}
 		}
 
+		CManager_Timer::start('application->run router');
 		$this->getRouter()->run();
+		CManager_Timer::end('application->run router');
+
 		CManager_Display::setApplication(CManager_Registry::getFrontController());
 
 		$page = $this->getRouter()->getPage();
+
 		$page->sendHeaders();
+
+		CManager_Timer::start('application->run background tags');
 		$page->runTagsByMode(CManager_Controller_Tag::MODE_BACKGROUND);
+		CManager_Timer::end('application->run background tags');
+
+		CManager_Timer::start('application->render');
 		if ($request->hasRequestTag()) {
 			if ($page->hasTagsByName($request->getRequestTag(), CManager_Controller_Tag::MODE_NORMAL)) {
 				$content = $page->runTagsByName($request->getRequestTag(), CManager_Controller_Tag::MODE_NORMAL);
@@ -76,6 +85,7 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 		} else {
 			$content = $page->render();
 		}
+		CManager_Timer::end('application->render');
 
 		$config = CManager_Registry::getConfig();
 		if ($config->debug && $response->isException() && $response->renderExceptions()) {

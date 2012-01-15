@@ -9,12 +9,6 @@
  * @license		http://creativecommons.org/licenses/LGPL/2.1/ LGPL
  */
 
-require_once 'CManager/Exception.php';
-
-class CManager_Loader_Exception extends CManager_Exception {
-
-}
-
 class CManager_Loader {
 	/**
 	 * Load class by standardized class name
@@ -30,13 +24,7 @@ class CManager_Loader {
 			return true;
 		}
 
-		$name = str_replace('_', DIRECTORY_SEPARATOR, $className);
-
-		if (strpos($name, DIRECTORY_SEPARATOR) === false) {
-			$name = $name . DIRECTORY_SEPARATOR . $name;
-		}
-
-		$path = $name .'.php';
+		$path = str_replace('_', DIRECTORY_SEPARATOR, $className) .'.php';
 
 		// ловим Warnings на отсутствие файла, но Fatal Error будут происходить все равно
 		set_error_handler(array(__CLASS__, 'loadFileErrorHandler')); // Warnings and errors are suppressed
@@ -51,6 +39,22 @@ class CManager_Loader {
 		}
 
 		return $path;
+	}
+
+	/**
+	 * @static
+	 * @return void
+	 */
+	public static function register() {
+		spl_autoload_register(__CLASS__ . '::load');
+	}
+
+	/**
+	 * @static
+	 * @return void
+	 */
+	public static function unregister() {
+		spl_autoload_unregister(__CLASS__ . '::load');
 	}
 
 	/**

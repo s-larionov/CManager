@@ -33,11 +33,11 @@ class CManager_Controller_PageResolver {
 		foreach($routes as $pageName => $route) {
 			$variables = $route->parse($path);
 			if ($variables !== false) {
-				$page = $this->getRouter()->createPage($pageName, $variables);
-				return $page;
+				return $this->getRouter()->createPage($pageName, $variables);
 			}
 		}
 
+		CManager_Timer::start('application->run router->find start page');
 		if ($path == '/') {
 			foreach($routes as $pageName => $route) {
 				if ($route->getPageConfig()->start === true) {
@@ -48,7 +48,12 @@ class CManager_Controller_PageResolver {
 				}
 			}
 		}
+		CManager_Timer::end('application->run router->find start page');
 
-		return $this->getRouter()->createPageByCode(404);
+		CManager_Timer::start('application->run router->create 404 page');
+		$page = $this->getRouter()->createPageByCode(404);
+		CManager_Timer::end('application->run router->create 404 page');
+
+		return $page;
 	}
 }
