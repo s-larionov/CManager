@@ -92,7 +92,7 @@ abstract class CManager_Controller_Action_Abstract extends CManager_Controller_A
 	 *	@return CManager_Controller_Tag
 	 */
 	protected function getTag() {
-		return $this->getParam('tagOwner');
+		return $this->_tag;
 	}
 
 	/**

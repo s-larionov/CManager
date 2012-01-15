@@ -1,11 +1,14 @@
 <?php
 
-class Mods_Content extends CManager_Controller_Action_Abstract {
+class Mods_Content extends CManager_Controller_Action_Cache {
+	protected $_cacheEnabled = true;
 
 	/**
 	 * @return void
 	 */
 	public function run() {
+		$this->tryLoadFromCache();
+
 		$dirs = CManager_Registry::getConfig()->get('content');
 
 		if (!$dirs) {

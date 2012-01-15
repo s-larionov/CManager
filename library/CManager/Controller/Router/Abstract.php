@@ -134,11 +134,13 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 				$classPage = $pageConfig->namespace;
 			}
 
+			CManager_Timer::start('application->run router->create page');
 			$page = /** @var CManager_Controller_Page $page */ CManager_Helper_Object::newInstance(
 				$classPage,
 				'CManager_Controller_Page',
 				array($pageConfig, $this->getRequest(), $this->getResponse())
 			);
+			CManager_Timer::end('application->run router->create page');
 
 			$page->setRoute($routes[$pageName])
 				->setVariables($variables)

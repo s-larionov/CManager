@@ -146,13 +146,11 @@ class CManager_Controller_Tag {
 	 */
 	public function getController($request = null, $response = null) {
 		if ($this->_controller === null) {
-			$className = $this->_namespace;
-			$class = new ReflectionClass($className);
-			if (!$class->isSubclassOf(new ReflectionClass('CManager_Controller_Action_Abstract'))) {
-				throw new CManager_Controller_Exception("Вызов тэга {$this->_name}. ".
-								"Класс должен быть наследником CManager_Controller_Action_Abstract");
-			}
-			$this->_controller = $class->newInstance($this, $request, $response);
+			$this->_controller = CManager_Helper_Object::newInstance(
+				$this->_namespace,
+				'CManager_Controller_Action_Abstract',
+				array($this, $request, $response)
+			);
 		}
 		if ($request !== null) {
 			$this->_controller->setRequest($request);

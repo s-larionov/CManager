@@ -1,16 +1,41 @@
 <?php
 
-abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
+abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Cache {
+	/**
+	 * @var boolean
+	 */
+	protected $_cacheEnabled = true;
+
 	/**
 	 * @var Mods_Glue_Glue
 	 */
 	protected $_glue = null;
+
+	protected function _getCacheKey() {
+		$fileNames = '';
+		foreach($this->getGlue()->getFiles() as $file) {
+			$fileNames .= $file->getFilename();
+		}
+		$hash = md5($fileNames);
+		return "[*][glue-{$this->getTag()->name}][{$hash}]";
+	}
+
+	protected function _getCacheValidateHash() {
+		$hash = '';
+		$storageConfig = /** @var Zend_Config $storageConfig */ $this->getConfig()->get('storage');
+		if ($storageConfig instanceof Zend_Config) {
+			$hash = md5(implode('', $storageConfig->toArray()));
+		}
+		return $hash;
+	}
 
 	/**
 	 * @return void
 	 * @throws Mods_Glue_Exception
 	 */
 	public function run() {
+		$this->tryLoadFromCache();
+
 		$this->getGlue()->setStorage($this->_createStorage());
 
 		$items = $this->getParam('item');
@@ -21,7 +46,7 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
 			$items = array($items);
 		}
 		foreach($items as $item) {
-			$this->getGlue()->addFile(Mods_Glue_Glue::newFile($this->getConfig()->class, $item));
+			$this->getGlue()->addFile(Mods_Glue_Glue::newFile($this->getConfig()->get('class'), $item));
 		}
 
 		try {
@@ -35,11 +60,11 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Abstract {
 	 * @return Mods_Glue_Storage_Interface
 	 */
 	protected function _createStorage() {
-		$config = /** @var Zend_Config $config */ $this->getConfig()->storage;
+		$config = /** @var Zend_Config $config */ $this->getConfig()->get('storage');
 		if (!($config instanceof Zend_Config)) {
 			throw new Mods_Glue_Exception("Storage not configured or wrong configuration data");
 		}
-		$adapter = (string) $config->adapter;
+		$adapter = (string) $config->get('adapter');
 		if ($adapter == '') {
 			throw new Mods_Glue_Exception("Storage adapter not configured");
 		}

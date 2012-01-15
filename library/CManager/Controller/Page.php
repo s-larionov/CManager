@@ -57,7 +57,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	/**
 	 * @var CManager_Controller_Router_Config_Page
 	 */
-	protected $_config = array();
+	protected $_config = null;
 
 	/**
 	 * @var array
@@ -72,8 +72,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	public function __construct(CManager_Controller_Router_Config_Page $config, CManager_Controller_Request_Abstract $request, CManager_Controller_Response_Abstract $response) {
 		parent::__construct($request, $response);
 		$this->_config = $config;
-		$this->_addTags();
-
+		$this->_initTags();
 		$this->setCode($config->error_code);
 		$this->setContentType($config->content_type);
 	}
@@ -94,7 +93,10 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return CManager_Controller_Tag
 	 */
 	public function createTag($name, $namespace, $mode, $params = null) {
-		return new CManager_Controller_Tag($name, $namespace, $mode, $params);
+		CManager_Timer::start("page->create tag '{$name}'");
+		$tag = new CManager_Controller_Tag($name, $namespace, $mode, $params);
+		CManager_Timer::end("page->create tag '{$name}'");
+		return $tag;
 	}
 
 	/**
@@ -162,7 +164,8 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 *
 	 * @return void
 	 */
-	protected function _addTags() {
+	protected function _initTags() {
+		CManager_Timer::start('page->init tags');
 		$this->_tags = array();
 		// выбираем тэги
 
@@ -187,6 +190,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		foreach ($sessionData as $tag) {
 			$this->addTag($this->unserializeTag($tag));
 		}
+		CManager_Timer::end('page->init tags');
 	}
 
 	/**
@@ -273,14 +277,16 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @throws CManager_Controller_Action_DoneException
 	 */
 	private function _runTag(CManager_Controller_Tag $tag) {
+		CManager_Timer::start("run tag '{$tag->name}' mode '{$tag->mode}'");
 		$out = '';
 		try {
 			$out .= $tag->run($this->getRequest(), $this->getResponse());
 		} catch (CManager_Controller_Action_DoneException $e) {
-			return (string) $e;
+			$out = (string) $e;
 		} catch (Exception $e) {
 			$this->getResponse()->setException($e);
 		}
+		CManager_Timer::end("run tag '{$tag->name}' mode '{$tag->mode}'");
 		return $out;
 	}
 
@@ -290,6 +296,8 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return string
 	 */
 	public function render() {
+		CManager_Timer::start('page->render');
+		$out = '';
 		try {
 			$layouts = CManager_Registry::getConfig()->get('layouts');
 
@@ -316,12 +324,13 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 
 			ob_start();
 			include $layout;
-			return ob_get_clean();
+			$out = ob_get_clean();
 		} catch (Exception $e) {
 			$this->getResponse()->setException($e);
 		}
 
-		return '';
+		CManager_Timer::end('page->render');
+		return $out;
 	}
 
 	/**
@@ -390,11 +399,11 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	}
 
 	/**
-	 * @param int $value
+	 * @param int $code
 	 * @return CManager_Controller_Page
 	 */
-	final public function setCode($value) {
-		$this->_code = (int) $value;
+	final public function setCode($code) {
+		$this->_code = (int) $code;
 		return $this;
 	}
 
@@ -425,11 +434,11 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	}
 
 	/**
-	 * @param string $value
+	 * @param string $layout
 	 * @return CManager_Controller_Page
 	 */
-	final public function setLayout($value) {
-		$this->_layout = $value;
+	final public function setLayout($layout) {
+		$this->_layout = $layout;
 		return $this;
 	}
 
@@ -445,12 +454,12 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	}
 
 	/**
-	 * @param string $value
+	 * @param string $title
 	 * @param string $mode
 	 * @return CManager_Controller_Page
 	 */
-	final public function setTitle($value, $mode = 'default') {
-		$this->_titles[$mode] = $value;
+	final public function setTitle($title, $mode = 'default') {
+		$this->_titles[$mode] = $title;
 		return $this;
 	}
 
@@ -520,5 +529,12 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 */
 	public function getStructure() {
 		return $this->getRoute()->getPageConfig();
+	}
+
+	/**
+	 * @return CManager_Controller_Router_Config_Page
+	 */
+	public function getConfig() {
+		return $this->_config;
 	}
 }

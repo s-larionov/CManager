@@ -61,13 +61,6 @@ abstract class CManager_Cache_Storage_Abstract {
 	}
 
 	/**
-	 * @return int
-	 */
-	protected function _getDefaultTtl() {
-		return array_key_exists('default_ttl', $this->_config)? (int) $this->_config['default_ttl']: 0;
-	}
-
-	/**
 	 * @param string $key
 	 * @return string
 	 */
@@ -85,8 +78,8 @@ abstract class CManager_Cache_Storage_Abstract {
 	 * @return int
 	 */
 	protected function _getCacheExpiredTime($ttl) {
-		if ($ttl === null) {
-			$ttl = $this->_getDefaultTtl();
+		if (!$ttl) {
+			$ttl = array_key_exists('default_ttl', $this->_config)? (int) $this->_config['default_ttl']: 0;
 		}
 		if ($ttl == -1) {
 			$ttl = 31536000; // year in seconds

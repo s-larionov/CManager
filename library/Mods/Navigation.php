@@ -1,6 +1,8 @@
 <?php
 
-class Mods_Navigation extends CManager_Controller_Action_Abstract {
+class Mods_Navigation extends CManager_Controller_Action_Cache {
+	protected $_cacheEnabled = true;
+
 	/**
 	 * @var Mods_Navigation_Item[]
 	 */
@@ -35,6 +37,8 @@ class Mods_Navigation extends CManager_Controller_Action_Abstract {
 	}
 
 	public function run() {
+		$this->tryLoadFromCache();
+
 		$name	= $this->getParam('name');
 		$xml	= $this->getNavigation($name)->toXml();
 		$xsl	= $this->getParam('xsl');
