@@ -59,9 +59,7 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 			}
 		}
 
-		CManager_Timer::start('application->run router');
 		$this->getRouter()->run();
-		CManager_Timer::end('application->run router');
 
 		CManager_Display::setApplication(CManager_Registry::getFrontController());
 
@@ -69,9 +67,7 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 
 		$page->sendHeaders();
 
-		CManager_Timer::start('application->run background tags');
 		$page->runTagsByMode(CManager_Controller_Tag::MODE_BACKGROUND);
-		CManager_Timer::end('application->run background tags');
 
 		if ($request->hasRequestTag()) {
 			if ($page->hasTagsByName($request->getRequestTag(), CManager_Controller_Tag::MODE_NORMAL)) {
@@ -86,7 +82,7 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 		}
 
 		$config = CManager_Registry::getConfig();
-		if ($config->debug && $response->isException() && $response->renderExceptions()) {
+		if ($config->get('debug') && $response->isException() && $response->renderExceptions()) {
 			foreach ($response->getException() as $e) {
 				echo (string)$e->getMessage() ."\n\n";
 				if (!($e instanceof CManager_Exception)) {

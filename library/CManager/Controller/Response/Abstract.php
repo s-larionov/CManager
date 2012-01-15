@@ -323,7 +323,7 @@ abstract class CManager_Controller_Response_Abstract {
 	/**
 	 * Retrieve the exception stack
 	 *
-	 * @return array
+	 * @return CManager_Exception[]
 	 */
 	public function getException() {
 		return $this->_exceptions;

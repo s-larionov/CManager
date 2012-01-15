@@ -86,25 +86,30 @@ class CManager_Cache_Manager {
 	 * @static
 	 * @param string $scope
 	 * @param string $defaultScope
+	 * @param bool   $strict
 	 * @return CManager_Cache_Storage_Abstract
 	 */
-	public static function getConnectionByScope($scope, $defaultScope = self::SCOPE_DEFAULT) {
+	public static function getConnectionByScope($scope, $defaultScope = self::SCOPE_DEFAULT, $strict = false) {
 		return self::getConnectionByAlias(
-			self::_getConnectionAliasByScope($scope, $defaultScope)
+			self::_getConnectionAliasByScope($scope, $defaultScope, $strict)
 		);
 	}
 
 	/**
 	 * @static
-	 * @param string $scopeName
+	 * @param string      $scopeName
 	 * @param string|null $defaultScope
-	 * @internal param string $scope
+	 * @param bool        $strict* @internal param string $scope
 	 * @return string
 	 */
-	protected static function _getConnectionAliasByScope($scopeName, $defaultScope = self::SCOPE_DEFAULT) {
+	protected static function _getConnectionAliasByScope($scopeName, $defaultScope = self::SCOPE_DEFAULT, $strict = false) {
 		if (empty(self::$_scopesMap)) {
-			$scopesConfig = /** @var Zend_Config $scopesConfig */ self::_getConfig()->get('__scopes');
-			if (!$scopesConfig instanceof Zend_Config) {
+			try {
+				$scopesConfig = /** @var Zend_Config $scopesConfig */ self::_getConfig()->get('__scopes');
+			} catch (CManager_Cache_Manager_Exception $e) {
+				if ($strict) {
+					throw $e;
+				}
 				$scopesConfig = new Zend_Config(array());
 			}
 			foreach($scopesConfig as $scope => $alias) {

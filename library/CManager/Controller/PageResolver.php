@@ -37,7 +37,6 @@ class CManager_Controller_PageResolver {
 			}
 		}
 
-		CManager_Timer::start('application->run router->find start page');
 		if ($path == '/') {
 			foreach($routes as $pageName => $route) {
 				if ($route->getPageConfig()->start === true) {
@@ -48,11 +47,8 @@ class CManager_Controller_PageResolver {
 				}
 			}
 		}
-		CManager_Timer::end('application->run router->find start page');
 
-		CManager_Timer::start('application->run router->create 404 page');
 		$page = $this->getRouter()->createPageByCode(404);
-		CManager_Timer::end('application->run router->create 404 page');
 
 		return $page;
 	}

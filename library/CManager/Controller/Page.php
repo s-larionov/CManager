@@ -93,9 +93,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return CManager_Controller_Tag
 	 */
 	public function createTag($name, $namespace, $mode, $params = null) {
-		CManager_Timer::start("page->create tag '{$name}'");
 		$tag = new CManager_Controller_Tag($name, $namespace, $mode, $params);
-		CManager_Timer::end("page->create tag '{$name}'");
 		return $tag;
 	}
 
@@ -165,7 +163,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return void
 	 */
 	protected function _initTags() {
-		CManager_Timer::start('page->init tags');
 		$this->_tags = array();
 		// выбираем тэги
 
@@ -190,7 +187,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		foreach ($sessionData as $tag) {
 			$this->addTag($this->unserializeTag($tag));
 		}
-		CManager_Timer::end('page->init tags');
 	}
 
 	/**
@@ -277,7 +273,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @throws CManager_Controller_Action_DoneException
 	 */
 	private function _runTag(CManager_Controller_Tag $tag) {
-		CManager_Timer::start("run tag '{$tag->name}' mode '{$tag->mode}'");
 		$out = '';
 		try {
 			$out .= $tag->run($this->getRequest(), $this->getResponse());
@@ -286,7 +281,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 		} catch (Exception $e) {
 			$this->getResponse()->setException($e);
 		}
-		CManager_Timer::end("run tag '{$tag->name}' mode '{$tag->mode}'");
 		return $out;
 	}
 
@@ -296,7 +290,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return string
 	 */
 	public function render() {
-		CManager_Timer::start('page->render');
 		$out = '';
 		try {
 			$layouts = CManager_Registry::getConfig()->get('layouts');
@@ -329,7 +322,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 			$this->getResponse()->setException($e);
 		}
 
-		CManager_Timer::end('page->render');
 		return $out;
 	}
 
