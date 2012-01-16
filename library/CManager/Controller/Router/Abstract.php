@@ -6,6 +6,9 @@
  */
 
 abstract class CManager_Controller_Router_Abstract extends CManager_Controller_Abstract {
+	
+	const DEFAULT_CLASS_PAGE = 'CManager_Controller_Page';
+	
 	/*
 	 * запрашиваемая страница
 	 * @var CManager_Controller_Page
@@ -126,19 +129,12 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 		$routes = $this->getRoutes();
 		if (isset($routes[$pageName])) {
 			$pageConfig = $routes[$pageName]->getPageConfig();
-			$classPage = 'CManager_Controller_Page';
-			if ($pageConfig->namespace !== null) {
-				if (!class_exists($pageConfig->namespace)) {
-					throw new CManager_Controller_Router_Exception("Class {$pageConfig->namespace} not defined");
-				}
-				$classPage = $pageConfig->namespace;
-			}
+			$classPage = $pageConfig->namespace !== null? $pageConfig->namespace: self::DEFAULT_CLASS_PAGE;
 
 			$page = /** @var CManager_Controller_Page $page */ CManager_Helper_Object::newInstance(
-				$classPage,
-				'CManager_Controller_Page',
-				array($pageConfig, $this->getRequest(), $this->getResponse())
-			);
+					$classPage,
+					self::DEFAULT_CLASS_PAGE,
+					array($pageConfig, $this->getRequest(), $this->getResponse()));
 
 			$page->setRoute($routes[$pageName])
 				->setVariables($variables)

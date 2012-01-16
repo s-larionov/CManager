@@ -38,9 +38,6 @@ class CManager_Controller_Route {
 	 * @param CManager_Controller_Router_Config_RouteVar[] $varsRules
 	 */
 	public function __construct($route, array $varsRules = array()) {
-		if (!is_array($varsRules)) {
-			throw new CManager_Controller_Route_Exception('Route config must be array');
-		}
 		$this->_route = (string) $route;
 
 		foreach($varsRules as $var) {
