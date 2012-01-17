@@ -18,7 +18,7 @@ class Mods_Content extends CManager_Controller_Action_Cache {
 		$file = CManager_Helper_File::getFullPath($this->getParam('file'), $dirs, false);
 
 		if ($file === null) {
-			return;
+			throw new CManager_Exception("File '{$file}' doesen't exists");
 		}
 
 		$this->sendContent(trim($this->_getContent($file)));
