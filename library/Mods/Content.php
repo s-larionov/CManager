@@ -4,24 +4,36 @@ class Mods_Content extends CManager_Controller_Action_Cache {
 	protected $_cacheEnabled = true;
 
 	/**
+	 * @return int|null
+	 */
+	protected function _getCacheValidateHash() {
+		$filename = $this->getFilename();
+		return $filename? filemtime($filename): null;
+	}
+
+	/**
 	 * @return void
 	 */
 	public function run() {
 		$this->tryLoadFromCache();
 
-		$dirs = CManager_Registry::getConfig()->get('content');
+		$filename = $this->getFilename();
+		if ($filename === null) {
+			throw new CManager_Exception("File '{$filename}' doesen't exists");
+		}
 
+		$this->sendContent(trim($this->_getContent($filename)));
+	}
+
+	/**
+	 * @return null|string
+	 */
+	public function getFilename() {
+		$dirs = CManager_Registry::getConfig()->get('content');
 		if (!$dirs) {
 			$dirs = './content';
 		}
-
-		$file = CManager_Helper_File::getFullPath($this->getParam('file'), $dirs, false);
-
-		if ($file === null) {
-			throw new CManager_Exception("File '{$file}' doesen't exists");
-		}
-
-		$this->sendContent(trim($this->_getContent($file)));
+		return CManager_Helper_File::getFullPath($this->getParam('file'), $dirs, false);
 	}
 
 	/**

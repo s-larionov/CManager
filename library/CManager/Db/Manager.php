@@ -1,51 +1,137 @@
 <?php
 
 class CManager_Db_Manager {
+	const SCOPE_DEFAULT	= 'default';
+	const ALIAS_DEFAULT	= 'default';
+	const ADAPTER_DEFAULT	= 'Zend';
+
+	const CONFIG_PARAM_SCOPES = 'scopes';
+	const CONFIG_PARAM_CONNECTIONS = 'connections';
+
 	/**
-	 * @var CManager_Db_Manager_Adapter_Interface[]
+	 * @var Zend_Config
+	 */
+	protected static $_config = null;
+
+	/**
+	 * @var CManager_Db_Adapter_Abstract[]
 	 */
 	protected static $_connections = array();
 
 	/**
-	 * @param string $alias
-	 * @return CManager_Db_Manager_Adapter_Interface
+	 * Map of 'scope' => 'alias'
+	 *
+	 * @var string[]
 	 */
-	public static function connection($alias) {
-		if (!isset(self::$_connections[$alias])) {
-			$config = CManager_Registry::getConfig()->get('database_manager');
+	protected static $_scopesMap = array();
 
-			if (!($config instanceof Zend_Config)) {
-				throw new CManager_Db_Manager_Exception('Database manager is not configured.');
+	/**
+	 * @static
+	 * @param string $mode
+	 * @return Zend_Config
+	 * @throws CManager_Db_Manager_Exception
+	 */
+	protected static function _getConfig($mode = self::CONFIG_PARAM_CONNECTIONS) {
+		if (self::$_config === null) {
+			self::$_config = CManager_Registry::getConfig()->get('db_manager');
+
+			if (!self::$_config instanceof Zend_Config) {
+				throw new CManager_Db_Manager_Exception('Db manager is not configured.');
 			}
+		}
+		if (!isset(self::$_config->$mode) || !self::$_config->$mode instanceof Zend_Config) {
+			throw new CManager_Db_Manager_Exception("Db manager {$mode} is not configured.");
+		}
+		return self::$_config->$mode;
+	}
 
-			$config = $config->get($alias);
+	/**
+	 * @static
+	 * @param string $connectionAlias
+	 * @return Zend_Config
+	 * @throws CManager_Db_Manager_Exception
+	 */
+	protected static function _getAliasConfig($connectionAlias = self::ALIAS_DEFAULT) {
+		$config = /** @var Zend_Config $config */ self::_getConfig('connections')->get($connectionAlias);
+		if (!$config instanceof Zend_Config) {
+			throw new CManager_Cache_Manager_Exception("Cache connection '{$connectionAlias}' is not configured.");
+		}
+		return $config;
+	}
 
-			if (!($config instanceof Zend_Config)) {
-				throw new CManager_Db_Manager_Exception("Database connection '$alias' is not defined.");
+	/**
+	 * @param string $alias
+	 * @return CManager_Db_Adapter_Abstract
+	 */
+	public static function getConnectionByAlias($alias) {
+		if (!array_key_exists($alias, self::$_connections)) {
+			$config	= self::_getAliasConfig($alias);
+			$adapter= $config->get('adapter', self::ADAPTER_DEFAULT);
+			try {
+				static::$_connections[$alias] = CManager_Helper_Object::newInstance(
+					"CManager_Db_Adapter_{$adapter}",
+					'CManager_Db_Adapter_Abstract',
+					array($config)
+				);
+			} catch (CManager_Exception $e) {
+				throw new CManager_Db_Manager_Exception("Db adapter '{$adapter}' is not found.");
 			}
-
-			if (!$config->adapter) {
-				$config->adapter = 'Zend';
-			}
-
-			$className = 'CManager_Db_Manager_Adapter_'. $config->adapter;
-			if (!class_exists($className)) {
-				throw new CManager_Db_Manager_Exception("Database manager adapter '{$config->adapter}' is not found.");
-			}
-
-			self::$_connections[$alias] = new $className($config);
 		}
 
-		return self::$_connections[$alias];
+		return static::$_connections[$alias];
+	}
+
+	/**
+	 * @static
+	 * @param string $scope
+	 * @param string $defaultScope
+	 * @return CManager_Db_Adapter_Abstract
+	 */
+	public static function getConnectionByScope($scope, $defaultScope = self::SCOPE_DEFAULT) {
+		return self::getConnectionByAlias(
+			self::_getConnectionAliasByScope($scope, $defaultScope)
+		);
+	}
+
+	/**
+	 * @static
+	 * @param string      $scopeName
+	 * @param string|null $defaultScope
+	 * @return string
+	 */
+	protected static function _getConnectionAliasByScope($scopeName, $defaultScope = self::SCOPE_DEFAULT) {
+		if (empty(self::$_scopesMap)) {
+			$scopesConfig = /** @var Zend_Config $scopesConfig */ self::_getConfig()->get('scopes');
+			if (!$scopesConfig instanceof Zend_Config) {
+				$scopesConfig = new Zend_Config(array());
+			}
+			if (is_numeric($scopesConfig->key())) {
+				$scopesConfig = array($scopesConfig);
+			}
+			foreach($scopesConfig as /** @var Zend_Config $scope */ $scope) {
+				self::$_scopesMap[$scope->get('name')] = $scope->get('connection');
+			}
+			if (empty(self::$_scopesMap)) {
+				self::$_scopesMap[self::SCOPE_DEFAULT] = self::ALIAS_DEFAULT;
+			}
+		}
+		if (!array_key_exists($scopeName, self::$_scopesMap)) {
+			if ($defaultScope === null || $scopeName == $defaultScope) {
+				throw new CManager_Db_Manager_Exception("Db scope '{$scopeName}' not configured");
+			}
+			self::$_scopesMap[$scopeName] = self::_getConnectionAliasByScope($defaultScope, null);
+		}
+		return self::$_scopesMap[$scopeName];
 	}
 
 	/**
 	 * @return void
 	 */
 	public function closeAllConnections() {
-		foreach (self::$_connections as $connection) {
+		foreach (self::$_connections as $key => $connection) {
 			$connection->closeConnection();
+			unset(self::$_connections[$key]);
 		}
 	}
-
 }
+

@@ -58,12 +58,11 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 	 * @return Mods_Navigation_Item
 	 */
 	public static function getNavigation($name, $fromCurrentPage = false) {
-		if (static::$_navigations === null) {
-			if ($fromCurrentPage) {
-				static::_createNavigations(self::_getCurrentPage()->getStructure());
-			} else {
-				static::_createNavigations();
-			}
+		if (!$fromCurrentPage && static::$_navigations === null) {
+			static::_createNavigations();
+		}
+		if ($fromCurrentPage && !array_key_exists($name, static::$_navigations)) {
+			static::_createNavigations(self::_getCurrentPage()->getStructure());
 		}
 
 		if (array_key_exists($name, static::$_navigations) && static::$_navigations[$name] instanceof Mods_Navigation_Item) {

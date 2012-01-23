@@ -68,7 +68,7 @@ abstract class CManager_Controller_Action_Abstract extends CManager_Controller_A
 	 * @return boolean
 	 */
 	protected function hasParam($name) {
-		return ($this->_tag->getParam($name, null) !== null);
+		return $this->getTag()->hasParam($name);
 	}
 
 	/**

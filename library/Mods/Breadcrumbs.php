@@ -1,6 +1,6 @@
 <?php
 
-class Mods_Breadcrumbs extends CManager_Controller_Action_Abstract {
+class Mods_Breadcrumbs extends CManager_Controller_Action_Cache {
 	public function run() {
 		try {
 			$breadcrumbs = (array) CManager_Registry::get('breadcrumbs');
@@ -11,6 +11,8 @@ class Mods_Breadcrumbs extends CManager_Controller_Action_Abstract {
 			));
 //			echo nl2br(htmlspecialchars($xml));
 			$this->sendContent(CManager_Dom_Document::xslTransformSource($this->getParam('xsl', ''), $xml));
-		} catch (CManager_Registry_Exception $e) { }
+		} catch (CManager_Registry_Exception $e) {
+			// Breadcrumbs not defined. Do nothing.
+		}
 	}
 }

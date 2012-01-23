@@ -86,6 +86,14 @@ class CManager_Controller_Tag {
 	}
 
 	/**
+	 * @param string $key
+	 * @return boolean
+	 */
+	public function hasParam($key) {
+		return array_key_exists($key, $this->_params);
+	}
+
+	/**
 	 * @param CManager_Controller_Router_Config_TagParam|array $params
 	 */
 	protected function _setParams(array $params) {
@@ -168,8 +176,7 @@ class CManager_Controller_Tag {
 	 */
 	public function run($request = null, $response = null) {
 		if (!$this->isDisabled()) {
-			$controller = $this->getController($request, $response);
-			return $controller->run();
+			return $this->getController($request, $response)->run();
 		}
 		return '';
 	}

@@ -1,6 +1,6 @@
 <?php
 
-class CManager_Db_Manager_Adapter_Zend implements CManager_Db_Manager_Adapter_Interface {
+class CManager_Db_Adapter_Zend extends CManager_Db_Adapter_Abstract {
 	/**
 	 * @var Zend_Config
 	 */
@@ -23,10 +23,8 @@ class CManager_Db_Manager_Adapter_Zend implements CManager_Db_Manager_Adapter_In
 	 */
 	public function getAdapter() {
 		if ($this->_adapter === null) {
-			$this->_adapter = Zend_Db::factory($this->_config->driver, $this->_config);
-			$this->_adapter->query('SET NAMES utf8');
+			$this->_adapter = Zend_Db::factory($this->getConfig()->get('driver'), $this->getConfig());
 		}
-
 		return $this->_adapter;
 	}
 
@@ -35,5 +33,21 @@ class CManager_Db_Manager_Adapter_Zend implements CManager_Db_Manager_Adapter_In
 	 */
 	public function closeConnection() {
 		$this->getAdapter()->closeConnection();
+	}
+
+	/**
+	 * @return Zend_Config
+	 */
+	public function getConfig() {
+		return $this->_config;
+	}
+
+	/**
+	 * @param Zend_Config $config
+	 * @return CManager_Db_Adapter_Zend
+	 */
+	public function setConfig(Zend_Config $config) {
+		$this->_config = $config;
+		return $this;
 	}
 }

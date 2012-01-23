@@ -10,9 +10,9 @@ class CManager_Helper_Xml {
 	 */
 	public static function parse($element, $value, array $elementAttrs = array(), array $config = array()) {
 		switch (true) {
+			/* case $value === null: */
 			case is_numeric($value):
 			case empty($value):
-//			case $value === null:
 				break;
 			case is_bool($value) || $value == 'true' || $value == 'false':
 				$value = $value? 'true': 'false';

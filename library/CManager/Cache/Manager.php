@@ -5,6 +5,9 @@ class CManager_Cache_Manager {
 	const ALIAS_DEFAULT	= 'default';
 	const STORAGE_MOCK	= 'Mock';
 
+	const CONFIG_PARAM_SCOPES = 'scopes';
+	const CONFIG_PARAM_CONNECTIONS = 'connections';
+
 	/**
 	 * @var Zend_Config
 	 */
@@ -24,18 +27,22 @@ class CManager_Cache_Manager {
 
 	/**
 	 * @static
+	 * @param string $mode
 	 * @return Zend_Config
 	 * @throws CManager_Cache_Manager_Exception
 	 */
-	protected static function _getConfig() {
+	protected static function _getConfig($mode = self::CONFIG_PARAM_CONNECTIONS) {
 		if (self::$_config === null) {
 			self::$_config = CManager_Registry::getConfig()->get('cache_manager');
 
-			if (!(self::$_config instanceof Zend_Config)) {
+			if (!self::$_config instanceof Zend_Config) {
 				throw new CManager_Cache_Manager_Exception('Cache manager is not configured.');
 			}
 		}
-		return self::$_config;
+		if (!isset(self::$_config->$mode) || !self::$_config->$mode instanceof Zend_Config) {
+			throw new CManager_Cache_Manager_Exception("Cache manager {$mode} is not configured.");
+		}
+		return self::$_config->$mode;
 	}
 
 	/**
@@ -45,7 +52,7 @@ class CManager_Cache_Manager {
 	 * @throws CManager_Cache_Manager_Exception
 	 */
 	protected static function _getAliasConfig($connectionAlias = self::ALIAS_DEFAULT) {
-		$config = self::_getConfig()->get($connectionAlias);
+		$config = /** @var Zend_Config $config */ self::_getConfig('connections')->get($connectionAlias);
 		if (!$config instanceof Zend_Config) {
 			throw new CManager_Cache_Manager_Exception("Cache connection '{$connectionAlias}' is not configured.");
 		}
@@ -54,18 +61,14 @@ class CManager_Cache_Manager {
 
 	/**
 	 * @param string $alias
-	 * @param bool   $strict If true - throw exception if connection alias doesen't exists, else - return Mock
-	 * @return CManager_Db_Manager_Adapter_Interface
+	 * @return CManager_Cache_Storage_Abstract
 	 */
-	public static function getConnectionByAlias($alias, $strict = false) {
+	public static function getConnectionByAlias($alias) {
 		if (!array_key_exists($alias, self::$_connections)) {
 			try {
 				$config	= self::_getAliasConfig($alias);
 			} catch (CManager_Cache_Manager_Exception $e) {
-				if ($strict) {
-					throw $e;
-				}
-				$config = new Zend_Config(array(), true);
+				$config = new Zend_Config(array());
 			}
 			$storage= $config->get('storage', self::STORAGE_MOCK);
 			try {
@@ -86,12 +89,11 @@ class CManager_Cache_Manager {
 	 * @static
 	 * @param string $scope
 	 * @param string $defaultScope
-	 * @param bool   $strict
 	 * @return CManager_Cache_Storage_Abstract
 	 */
-	public static function getConnectionByScope($scope, $defaultScope = self::SCOPE_DEFAULT, $strict = false) {
+	public static function getConnectionByScope($scope, $defaultScope = self::SCOPE_DEFAULT) {
 		return self::getConnectionByAlias(
-			self::_getConnectionAliasByScope($scope, $defaultScope, $strict)
+			self::_getConnectionAliasByScope($scope, $defaultScope)
 		);
 	}
 
@@ -99,28 +101,26 @@ class CManager_Cache_Manager {
 	 * @static
 	 * @param string      $scopeName
 	 * @param string|null $defaultScope
-	 * @param bool        $strict* @internal param string $scope
 	 * @return string
 	 */
-	protected static function _getConnectionAliasByScope($scopeName, $defaultScope = self::SCOPE_DEFAULT, $strict = false) {
+	protected static function _getConnectionAliasByScope($scopeName, $defaultScope = self::SCOPE_DEFAULT) {
 		if (empty(self::$_scopesMap)) {
-			try {
-				$scopesConfig = /** @var Zend_Config $scopesConfig */ self::_getConfig()->get('__scopes');
-			} catch (CManager_Cache_Manager_Exception $e) {
-				if ($strict) {
-					throw $e;
-				}
+			$scopesConfig = /** @var Zend_Config $scopesConfig */ self::_getConfig('scopes')->get('scope');
+			if (!$scopesConfig instanceof Zend_Config) {
 				$scopesConfig = new Zend_Config(array());
 			}
-			foreach($scopesConfig as $scope => $alias) {
-				self::$_scopesMap[$scope] = $alias;
+			if (!is_numeric($scopesConfig->key())) {
+				$scopesConfig = array($scopesConfig);
+			}
+			foreach($scopesConfig as /** @var Zend_Config $scope */ $scope) {
+				self::$_scopesMap[$scope->get('name')] = $scope->get('connection');
 			}
 			if (empty(self::$_scopesMap)) {
 				self::$_scopesMap[self::SCOPE_DEFAULT] = self::ALIAS_DEFAULT;
 			}
 		}
 		if (!array_key_exists($scopeName, self::$_scopesMap)) {
-			if ($defaultScope === null) {
+			if ($defaultScope === null || $scopeName == $defaultScope) {
 				throw new CManager_Cache_Manager_Exception("Cache scope '{$scopeName}' not configured");
 			}
 			self::$_scopesMap[$scopeName] = self::_getConnectionAliasByScope($defaultScope, null);

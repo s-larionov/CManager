@@ -1,6 +1,6 @@
 <?php
 
-class CManager_Db_Manager_Adapter_MondoDbNative implements CManager_Db_Manager_Adapter_Interface {
+class CManager_Db_Adapter_MondoDbNative extends CManager_Db_Adapter_Abstract {
 	/**
 	 * @var Zend_Config
 	 */
@@ -60,8 +60,7 @@ class CManager_Db_Manager_Adapter_MondoDbNative implements CManager_Db_Manager_A
 	/**
 	 * @return void
 	 */
-	public function closeConnection()
-	{
+	public function closeConnection() {
 		$this->_adapter->close();
 	}
 }

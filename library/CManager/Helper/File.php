@@ -5,7 +5,7 @@ class CManager_Helper_File {
 	 * @param string $file
 	 * @param null|array|string|Zend_Config $dirs
 	 * @param boolean $throw
-	 * @return string|false
+	 * @return string|null
 	 */
 	public static function getFullPath($file, $dirs = null, $throw = false) {
 		$dirs = $dirs instanceof Zend_Config
