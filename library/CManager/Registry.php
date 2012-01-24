@@ -27,6 +27,7 @@ class CManager_Registry extends CManager_Registry_Abstract {
 	 */
 	public static function setFrontController(CManager_Controller_Front $app) {
 		self::$_application = $app;
+		CManager_Display::setApplication($app);
 	}
 
 	/**
