@@ -50,9 +50,9 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	final public function getPage() {
 		if ($this->_page === null) {
 			try {
-				$this->_page = $this->getPageResolver()->getPage();
+				$this->setPage($this->getPageResolver()->getPage());
 			} catch (CManager_Controller_Page_404Exception $e) {
-				$this->_page = $this->createPageByCode(404);
+				$this->setPage($this->createPageByCode(404));
 			}
 		}
 		return $this->_page;
@@ -110,6 +110,7 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 */
 	final public function setPage(CManager_Controller_Page $page) {
 		$this->_page = $page;
+		$this->_page->init();
 	}
 
 	/**
@@ -126,19 +127,17 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 * @return CManager_Controller_Page
 	 */
 	public function createPage($pageName, array $variables = array()) {
-		$routes = $this->getRoutes();
-		if (isset($routes[$pageName])) {
-			$pageConfig = $routes[$pageName]->getPageConfig();
-			$classPage = $pageConfig->namespace !== null? $pageConfig->namespace: self::DEFAULT_CLASS_PAGE;
-
-			$page = /** @var CManager_Controller_Page $page */ CManager_Helper_Object::newInstance(
+		if ($route = $this->getRoutes($pageName)) {
+			$pageConfig	= $route->getPageConfig();
+			$classPage	= $pageConfig->namespace !== null? $pageConfig->namespace: self::DEFAULT_CLASS_PAGE;
+			$page		= /** @var CManager_Controller_Page $page */ CManager_Helper_Object::newInstance(
 					$classPage,
 					self::DEFAULT_CLASS_PAGE,
 					array($pageConfig, $this->getRequest(), $this->getResponse()));
 
-			$page->setRoute($routes[$pageName])
-				->setVariables($variables)
-				->init();
+			$page->setRoute($route)
+				->setVariables($variables);
+
 			return $page;
 		}
 		return $this->createPageByCode(404);

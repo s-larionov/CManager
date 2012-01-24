@@ -54,5 +54,4 @@ class CManager_Controller_Abstract extends CManager_EventEmitter {
 	public function getResponse() {
 		return $this->_response;
 	}
-
 }
