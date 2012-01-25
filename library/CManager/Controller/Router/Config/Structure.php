@@ -2,6 +2,7 @@
 
 /**
  * @property string $layout
+ * @property string $namespace
  *
  * @property CManager_Controller_Router_Config_Permission[]	$permission
  * @property CManager_Controller_Router_Config_Tag[]		$tag
@@ -13,7 +14,12 @@ class CManager_Controller_Router_Config_Structure extends CManager_Controller_Ro
 		'layout' => array(
 			'namespace' => 'string',
 			'required' => true
-		)
+		),
+		'namespace' => array(
+			'namespace' => 'string',
+			'required' => false,
+			'inherit' => true
+		),
 	);
 
 	protected $_children = array(
