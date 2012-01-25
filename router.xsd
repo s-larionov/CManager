@@ -151,16 +151,6 @@
 		</xs:complexType>
 	</xs:element>
 
-
-
-
-
-
-
-
-
-
-
 	<xs:element name="tag_exclusion">
 		<xs:complexType>
 			<xs:attribute type="xs:string" name="name" use="required"/>
@@ -168,7 +158,6 @@
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
 						<xs:enumeration value="pass"/>
-						<xs:enumeration value="overpass"/>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
