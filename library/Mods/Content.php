@@ -17,12 +17,12 @@ class Mods_Content extends CManager_Controller_Action_Cache {
 	public function run() {
 		$this->tryLoadFromCache();
 
-		$filename = $this->getFilename();
-		if ($filename === null) {
-			throw new CManager_Exception("File '{$filename}' doesen't exists");
+		$fullFilename = $this->getFilename();
+		if ($fullFilename === null) {
+			throw new CManager_Exception("File '{$this->getParam('file')}' doesen't exists");
 		}
 
-		$this->sendContent(trim($this->_getContent($filename)));
+		$this->sendContent(trim($this->_getContent($fullFilename)));
 	}
 
 	/**
