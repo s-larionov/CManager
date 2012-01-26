@@ -80,10 +80,9 @@ class CManager_Controller_Front extends CManager_Controller_Abstract {
 		$config = CManager_Registry::getConfig();
 		if ($config->get('debug') && $response->isException() && $response->renderExceptions()) {
 			foreach ($response->getException() as $e) {
-				echo (string)$e->getMessage() ."\n\n";
-				if (!($e instanceof CManager_Exception)) {
-					echo '<pre>'. $e->getTraceAsString() .'</pre>';
-				}
+				echo "<pre><b><big>{$e->getMessage()}</big>\n"
+					."in file {$e->getFile()}({$e->getLine()})</b>\n\n"
+					."{$e->getTraceAsString()}</pre>";
 			}
 		}
 
