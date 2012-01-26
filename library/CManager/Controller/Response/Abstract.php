@@ -215,12 +215,12 @@ abstract class CManager_Controller_Response_Abstract {
 	 *
 	 * @param boolean $throw Whether or not to throw an exception if headers have been sent; defaults to false
 	 * @return boolean
-	 * @throws cmController_Response_Exception
+	 * @throws CManager_Controller_Response_Exception
 	 */
 	public function canSendHeaders($throw = false) {
 		$ok = headers_sent($file, $line);
 		if ($ok && $throw && $this->headersSentThrowsException) {
-			throw new CManager_Controller_Response_Exception("cannot_send_headers. $file ($line)", $file, $line);
+			throw new CManager_Controller_Response_Exception("cannot_send_headers. $file ($line)");
 		}
 		return !$ok;
 	}
@@ -231,7 +231,7 @@ abstract class CManager_Controller_Response_Abstract {
 	 * Sends any headers specified. If an {@link setHttpResponseCode() HTTP response code}
 	 * has been specified, it is sent with the first header.
 	 *
-	 * @param bool $exit
+	 * @param boolean $exit
 	 * @return Zend_Controller_Response_Abstract
 	 */
 	public function sendHeaders($exit = false) {
