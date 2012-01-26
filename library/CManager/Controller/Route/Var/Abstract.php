@@ -15,7 +15,9 @@ abstract class CManager_Controller_Route_Var_Abstract {
 	 * @abstract
 	 * @return boolean
 	 */
-	abstract public function isValidRouteVariable();
+	public function isValidRouteVariable() {
+		return true;
+	}
 
 	/**
 	 * @param string|string[] $rawValue

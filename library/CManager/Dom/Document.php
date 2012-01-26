@@ -33,11 +33,10 @@ class CManager_Dom_Document extends DOMDocument {
 	public function loadXML($xmlString) {
 		if (!isset($this) || get_class($this) !== 'CManager_Dom_Document') {
 			// если метод вызван как статический
-			$doc = new CManager_Dom_Document;
+			$doc = new CManager_Dom_Document();
 			$doc->loadXML($xmlString);
 
 			if (count($error = libxml_get_errors())) {
-
 				throw new CManager_Dom_Exception($error, $xmlString);
 			}
 
@@ -115,7 +114,7 @@ class CManager_Dom_Document extends DOMDocument {
 
 		foreach ((array) $xslFiles as $xslFile) {
 			if (!file_exists($xslFile)) {
-				throw new CManager_Dom_Exception("Файл {$xslFile} не найден.");
+				throw new CManager_Dom_Exception("File '{$xslFile}' not found.");
 			}
 
 			$xslFile = str_replace("\\", '/', $xslFile);

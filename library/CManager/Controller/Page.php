@@ -3,6 +3,8 @@
 class CManager_Controller_Page extends CManager_Controller_Abstract implements CManager_Controller_Page_Interface {
 	const CONTENT_TYPE_DEFAULT = 'text/html; charset=utf-8';
 
+	const MODE_DEFAULT = 'default';
+
 	/**
 	 * Код заголовка (200, 403 и т.д.)
 	 *
@@ -339,14 +341,14 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @param string $mode
 	 * @return string
 	 */
-	protected function _getTitle($mode = 'default') {
+	protected function _getTitle($mode = self::MODE_DEFAULT) {
 		foreach($this->_config->title as $title) {
 			if ($title->mode == $mode) {
 				return (string) $title->value;
 			}
 		}
-		if ($mode != 'default') {
-			return $this->_getTitle('default');
+		if ($mode != self::MODE_DEFAULT) {
+			return $this->_getTitle(self::MODE_DEFAULT);
 		}
 		return '';
 	}
@@ -440,7 +442,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 */
 	final public function getTitle($mode = 'default') {
 		if (!array_key_exists($mode, $this->_titles)) {
-			$this->_titles[$mode] = $this->_getTitle($mode);
+			$this->setTitle($this->_getTitle($mode), $mode);
 		}
 		return $this->_titles[$mode];
 	}
