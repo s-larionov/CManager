@@ -61,7 +61,7 @@ class CManager_Display {
 	 * Параметры можно переопределять.
 	 *
 	 * @static
-	 * @param bool|string $name
+	 * @param boolean|string $name
 	 * @param array $params
 	 * @return string
 	 */
@@ -77,7 +77,7 @@ class CManager_Display {
 
 	/**
 	 * @static
-	 * @param bool|string $name
+	 * @param boolean|string $name
 	 * @return string
 	 * @see CManager_Display::url
 	 */

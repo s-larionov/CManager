@@ -60,7 +60,7 @@ class CManager_Controller_Route {
 	}
 
 	/**
-	 * @return bool
+	 * @return boolean
 	 */
 	public function hasParent() {
 		return $this->_parent !== null;
@@ -70,7 +70,7 @@ class CManager_Controller_Route {
 	 * Сгенерировать url на основе route и переданных параметров
 	 *
 	 * @param array $vars
-	 * @param bool $addQueryParams
+	 * @param boolean $addQueryParams
 	 * @return string
 	 */
 	public function generateUrl(array $vars = array(), $addQueryParams = true) {
@@ -169,7 +169,7 @@ class CManager_Controller_Route {
 	 * Возвращает список переменных (возможен пустой массив) в случае совпадения, иначе false
 	 *
 	 * @param string $url
-	 * @return string[]|bool
+	 * @return string[]|boolean
 	 * @throws CManager_Controller_Exception
 	 */
 	public function parse($url) {
