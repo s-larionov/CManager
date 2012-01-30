@@ -47,14 +47,13 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 			'class'		=> $this->getParam('class', ''),
 			'title-mode'=> $this->getParam('title-mode', 'nav')
 		);
-
 		$this->sendContent(CManager_Dom_Document::xslTransformSource($xsl, $xml, $params));
 	}
 
 	/**
 	 * @static
 	 * @param string $name
-	 * @param bool $fromCurrentPage
+	 * @param boolean $fromCurrentPage
 	 * @return Mods_Navigation_Item
 	 */
 	public static function getNavigation($name, $fromCurrentPage = false) {
