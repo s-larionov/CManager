@@ -18,7 +18,7 @@ class CManager_Helper_Array {
 
 	/**
 	 * @static
-	 * @param array $array
+	 * @param array[] $array
 	 * @param array $keyValueData
 	 * @param bool $multiple
 	 * @return array|null
