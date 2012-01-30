@@ -101,11 +101,11 @@ class CManager_Db_Manager {
 	 */
 	protected static function _getConnectionAliasByScope($scopeName, $defaultScope = self::SCOPE_DEFAULT) {
 		if (empty(self::$_scopesMap)) {
-			$scopesConfig = /** @var Zend_Config $scopesConfig */ self::_getConfig()->get('scopes');
+			$scopesConfig = /** @var Zend_Config $scopesConfig */ self::_getConfig('scopes')->get('scope');
 			if (!$scopesConfig instanceof Zend_Config) {
 				$scopesConfig = new Zend_Config(array());
 			}
-			if (is_numeric($scopesConfig->key())) {
+			if (!is_numeric($scopesConfig->key())) {
 				$scopesConfig = array($scopesConfig);
 			}
 			foreach($scopesConfig as /** @var Zend_Config $scope */ $scope) {
