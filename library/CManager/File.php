@@ -17,6 +17,11 @@ class CManager_File implements CManager_File_Interface {
 	protected $_attributes = array();
 
 	/**
+	 * @var int|null
+	 */
+	protected $_modifyTime = null;
+
+	/**
 	 * @param string $filename
 	 */
 	public function __construct($filename) {
@@ -111,6 +116,16 @@ class CManager_File implements CManager_File_Interface {
 	 */
 	public function delete() {
 		return @unlink($this->getFilename());
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getMTime() {
+		if ($this->_modifyTime === null) {
+			$this->_modifyTime = $this->isReadable()? filemtime($this->getFilename()): 0;
+		}
+		return $this->_modifyTime;
 	}
 }
 

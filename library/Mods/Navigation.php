@@ -53,23 +53,25 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 	/**
 	 * @static
 	 * @param string $name
-	 * @param boolean $fromCurrentPage
+	 * @param CManager_Controller_Router_Config_Page|null $fromPage
 	 * @return Mods_Navigation_Item
 	 */
-	public static function getNavigation($name, $fromCurrentPage = false) {
-		if (!$fromCurrentPage && static::$_navigations === null) {
+	public static function getNavigation($name, CManager_Controller_Router_Config_Page $fromPage = null) {
+		$key = $fromPage !== null? "{$fromPage->name}-{$name}": $name;
+
+		if ($fromPage === null && static::$_navigations === null) {
 			static::_createNavigations();
 		}
-		if ($fromCurrentPage && !array_key_exists($name, static::$_navigations)) {
-			static::_createNavigations(self::_getCurrentPage()->getStructure());
+		if ($fromPage !== null && !array_key_exists($key, static::$_navigations)) {
+			static::_createNavigations($fromPage);
 		}
 
-		if (array_key_exists($name, static::$_navigations) && static::$_navigations[$name] instanceof Mods_Navigation_Item) {
-			return static::$_navigations[$name];
+		if (array_key_exists($key, static::$_navigations) && static::$_navigations[$key] instanceof Mods_Navigation_Item) {
+			return static::$_navigations[$key];
 		}
 
-		static::$_navigations[$name] = static::_createRootNavigation($name);
-		return static::$_navigations[$name];
+		static::$_navigations[$key] = static::_createRootNavigation($name);
+		return static::$_navigations[$key];
 	}
 
 	/**
@@ -183,6 +185,9 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 					'url'		=> $url,
 					'isCurrent'	=> $page->name == self::_getCurrentPage()->getStructure()->name
 				), $navItem);
+			}
+			if (count($pageConfig->page) > 0) {
+				static::_isHerePage($pageConfig, $navItem);
 			}
 		}
 	}
