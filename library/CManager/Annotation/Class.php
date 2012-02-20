@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @method ReflectionClass getReflection
+ */
 class CManager_Annotation_Class extends CManager_Annotation_Abstract {
 	/**
 	 * @var null|CManager_Annotation_Method[]
