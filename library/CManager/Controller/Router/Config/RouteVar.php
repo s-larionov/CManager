@@ -10,6 +10,7 @@
  */
 class CManager_Controller_Router_Config_RouteVar extends CManager_Controller_Router_Config_Abstract {
 	protected $_name = 'var';
+
 	protected $_attributes = array(
 		'name' => array(
 			'namespace' => 'string',

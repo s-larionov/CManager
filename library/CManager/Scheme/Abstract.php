@@ -30,15 +30,24 @@ abstract class CManager_Scheme_Abstract  {
 				throw new CManager_Scheme_Exception("{$property} is required");
 			}
 
-			if ($annotation->hasAnnotation('single') && is_array($value)) {
+			if (!$annotation->hasAnnotation('multiple') && is_array($value)) {
 				throw new CManager_Scheme_Exception("Child '{$property}' should be only one");
 			}
 
-			if (!$annotation->hasAnnotation('single') && !is_array($value)) {
+			if ($annotation->hasAnnotation('multiple') && !is_array($value)) {
 				$value = $value === null? array(): array($value);
 			}
 
-			$this->$property = $this->createValue($value, $annotation);
+			if ($annotation->hasAnnotation('multiple')) {
+				$values = array();
+				foreach($value as $item) {
+					var_dump($item);
+					$values[] = $this->createValue($item, $annotation);
+				}
+				$this->$property = $values;
+			} else {
+				$this->$property = $this->createValue($value, $annotation);
+			}
 		}
 	}
 
@@ -79,62 +88,50 @@ abstract class CManager_Scheme_Abstract  {
 	 * @return mixed
 	 * @throws CManager_Scheme_Exception
 	 */
-	protected function createValue($value = null, CManager_Annotation_Property $annotation, $onlyScalar = false) {
+	protected function createValue($value = null, CManager_Annotation_Property $annotation) {
 		if ($value === null) {
-			$defaultValues = $this->getAnnotation()->getReflection()->getDefaultProperties();
-			$default = $defaultValues[$annotation->getReflection()->getName()];
-			if ($default === null) {
+			$value = $annotation->getDefaultValue();
+			if ($value === null) {
 				return null;
 			}
-			$value = $default;
 		}
 
-
-
-		if (!$annotation->hasAnnotation('single')) {
-			$result = array();
-			$itemConfig = array_merge($annotation, array('single' => true));
-			foreach($value as $item) {
-				$result[] = $this->_createValue($item, $itemConfig, $onlyScalar);
-			}
-			return $result;
+		$namespace = $annotation->getAnnotation('var', 'string');
+		if (substr($namespace, -2) == '[]') {
+			$namespace = substr($namespace, 0, -2);
 		}
-
 		switch(true) {
-			case strpos($annotation['namespace'], 'enum') === 0:
-				$enumValues	= explode(',', substr($annotation['namespace'], 5, -1));
+			case strpos($namespace, 'enum') === 0:
+				$enumValues	= explode(',', substr($namespace, 5, -1));
 				$value		= (string) $value;
 				if (!in_array($value, $enumValues)) {
-					throw new CManager_Structure_Exception("Value '{$value}' not in {$annotation['namespace']}");
+					throw new CManager_Structure_Exception("Value '{$value}' not in {$namespace}");
 				}
 				break;
-			case $annotation['namespace'] == 'int':
+			case $namespace == 'int':
 				$value = (int) $value;
 				break;
-			case $annotation['namespace'] == 'float':
-			case $annotation['namespace'] == 'double':
+			case $namespace == 'float':
+			case $namespace == 'double':
 				$value = (double) $value;
 				break;
-			case $annotation['namespace'] == 'bool':
-			case $annotation['namespace'] == 'boolean':
+			case $namespace == 'bool':
+			case $namespace == 'boolean':
 				$value = (bool) $value;
 				break;
-			case $annotation['namespace'] == 'string':
+			case $namespace == 'string':
+				var_dump($annotation->getAnnotations());
+				var_dump($value);
 				$value = (string) $value;
 				break;
-			case !$onlyScalar && class_exists(static::NAMESPACE_PREFIX . $annotation['namespace']):
-				if (!$value instanceof CManager_Structure_Adapter_Abstract) {
-					throw new CManager_Structure_Exception("Value for {$annotation['namespace']} must instanceof CManager_Structure_Adapter_Abstract");
+			case class_exists($namespace):
+				if (!$value instanceof CManager_Scheme_Adapter_Abstract) {
+					throw new CManager_Scheme_Exception("Value for {$namespace} must instanceof CManager_Structure_Adapter_Abstract");
 				}
-
-				$value = CManager_Helper_Object::newInstance(
-					static::NAMESPACE_PREFIX . $annotation['namespace'],
-					__CLASS__,
-					array($value, $this)
-				);
+				$value = CManager_Helper_Object::newInstance($namespace, __CLASS__, array($value, $this));
 				break;
 			default:
-				throw new CManager_Structure_Exception("Namespace {$annotation['namespace']} not defined");
+				throw new CManager_Structure_Exception("Namespace {$namespace} not defined");
 		}
 		return $value;
 	}

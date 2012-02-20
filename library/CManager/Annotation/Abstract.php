@@ -20,7 +20,7 @@ abstract class CManager_Annotation_Abstract {
 				$line = trim($line, "\r\t\n *");
 
 				if (strpos($line, '@') === 0) {
-					if ($pos = strpos($line, ' ')) {
+					if (($pos = strpos($line, ' ')) || ($pos = strpos($line, "\t"))) {
 						$this->addAnnotation(substr($line, 1, $pos - 1), trim(substr($line, $pos)));
 					} else {
 						$this->addAnnotation(substr($line, 1), true);
@@ -41,7 +41,7 @@ abstract class CManager_Annotation_Abstract {
 	 */
 	protected function addAnnotation($name, $value) {
 		if (array_key_exists($name, $this->annotations)) {
-			if (is_array($this->annotations[$name])) {
+			if (!is_array($this->annotations[$name])) {
 				$this->annotations[$name] = array($this->annotations[$name]);
 			}
 			$this->annotations[$name][] = $value;
