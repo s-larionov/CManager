@@ -1,13 +1,5 @@
 <?php
 
-/**
- * @property string $name
- * @property string $rule
- * @property string|null $explode
- * @property string|null $default
- * @property string|null $pattern
- * @property string|null $namespace
- */
 class CManager_Controller_Router_Config_RouteVar extends CManager_Controller_Router_Config_Abstract {
 	/**
 	 * @var string

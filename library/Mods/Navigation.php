@@ -148,7 +148,10 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 
 		$titles = array();
 		foreach($pageConfig->title as $title) {
-			$titles[] = $title->toArray();
+			$titles[] = array(
+				'mode' => $title->mode,
+				'value'=> $title->value
+			);
 		}
 
 		foreach($navigationTags as $navigationTag) {
@@ -157,7 +160,10 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 			}
 
 			$navItem = new Mods_Navigation_Item($navigationTag->name,
-				array_merge($navigationTag->toArray(), array(
+				array_merge(array(
+					'name' => $navigationTag->name,
+					'value' => $navigationTag->value
+				), array(
 					'name'		=> $pageConfig->name,
 					'title'		=> $titles,
 					'url'		=> $config['url'],
