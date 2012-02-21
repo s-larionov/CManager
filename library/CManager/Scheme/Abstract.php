@@ -1,6 +1,6 @@
 <?php
 
-abstract class CManager_Scheme_Abstract  {
+abstract class CManager_Scheme_Abstract {
 	/**
 	 * @var CManager_Scheme_Adapter_Abstract
 	 */
