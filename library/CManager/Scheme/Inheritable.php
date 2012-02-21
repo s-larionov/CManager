@@ -10,8 +10,7 @@ abstract class CManager_Scheme_Inheritable extends CManager_Scheme_Abstract  {
 				if ($annotation->hasAnnotation('multiple')) {
 					$this->inheritMultiple($property, $annotation);
 				} else {
-					var_dump(array($property, $annotation->getAnnotations()));
-//					$this->inheritSingle($property, $annotation);
+					$this->inheritSingle($property);
 				}
 			}
 		}
@@ -100,6 +99,34 @@ abstract class CManager_Scheme_Inheritable extends CManager_Scheme_Abstract  {
 						$this->{$propertyName}[] = $propertyItem;
 					}
 				}
+			}
+		}
+	}
+
+	/**
+	 * Наследование св-в. Работает только если нет значения по-умолчанию.
+	 *
+	 * @param string $propertyName
+	 * @return void
+	 * @throws CManager_Structure_Exception
+	 */
+	protected function inheritSingle($propertyName) {
+		// наследуем только если оно не переопределено в текущем элементе
+		if ($this->{$propertyName} !== null) {
+			return;
+		}
+
+		// собираем элементы с родителей
+		$parent = $this;
+		while ($parent = $parent->getParent()) {
+			// если у родителя нет такого св-ва, то пропускаем его
+			if (!property_exists($parent, $propertyName)) {
+				continue;
+			}
+
+			if (($property = $parent->$propertyName) !== null) {
+				$this->{$propertyName} = $property;
+				return;
 			}
 		}
 	}
