@@ -9,7 +9,7 @@ class CManager_Helper_Array {
 	public static function isNumberedArray(array $array) {
 		$keys = array_keys($array);
 		foreach ($keys as $key) {
-			if (!is_numeric($key)) {
+			if (!is_int($key)) {
 				return false;
 			}
 		}

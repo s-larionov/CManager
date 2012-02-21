@@ -16,7 +16,7 @@ class CManager_Scheme_Adapter_Array extends CManager_Scheme_Adapter_Abstract {
 	 */
 	public function get($name) {
 		if (array_key_exists($name, $this->array)) {
-			if (is_array($this->array[$name])) {
+			if (is_array($this->array[$name]) && CManager_Helper_Array::isNumberedArray($this->array[$name])) {
 				$subItem = array();
 				foreach($this->array[$name] as $key => $item) {
 					$subItem[$key] = new self($item);

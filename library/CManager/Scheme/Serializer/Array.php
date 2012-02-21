@@ -38,7 +38,7 @@ class CManager_Scheme_Serializer_Array implements CManager_Scheme_Serializer_Int
 	 */
 	public static function unserialize($serializedScheme, $namespace) {
 		return CManager_Helper_Object::newInstance($namespace, 'CManager_Scheme_Abstract', array(
-			new CManager_Scheme_Serializer_Array($serializedScheme)
+			new CManager_Scheme_Adapter_Array($serializedScheme)
 		));
 	}
 }
