@@ -16,8 +16,11 @@ abstract class CManager_Scheme_Abstract  {
 	 */
 	protected $parent = null;
 
-	final public function __construct(CManager_Scheme_Adapter_Abstract $adapter) {
-		$this->adapter = $adapter;
+	final public function __construct(CManager_Scheme_Adapter_Abstract $adapter, CManager_Scheme_Abstract $parent = null) {
+		$this->setAdapter($adapter);
+		if ($parent !== null) {
+			$this->setParent($parent);
+		}
 		$this->annotation = new CManager_Annotation_Object($this);
 		$this->parse();
 	}
@@ -41,7 +44,6 @@ abstract class CManager_Scheme_Abstract  {
 			if ($annotation->hasAnnotation('multiple')) {
 				$values = array();
 				foreach($value as $item) {
-					var_dump($item);
 					$values[] = $this->createValue($item, $annotation);
 				}
 				$this->$property = $values;
@@ -75,6 +77,15 @@ abstract class CManager_Scheme_Abstract  {
 	}
 
 	/**
+	 * @param CManager_Scheme_Adapter_Abstract $adapter
+	 * @return CManager_Scheme_Abstract
+	 */
+	public function setAdapter(CManager_Scheme_Adapter_Abstract $adapter) {
+		$this->adapter = $adapter;
+		return $this;
+	}
+
+	/**
 	 * @return CManager_Annotation_Object
 	 */
 	public function getAnnotation() {
@@ -84,7 +95,6 @@ abstract class CManager_Scheme_Abstract  {
 	/**
 	 * @param CManager_Scheme_Adapter_Abstract[]|CManager_Scheme_Adapter_Abstract|string|null $value
 	 * @param CManager_Annotation_Property $annotation
-	 * @param boolean $onlyScalar
 	 * @return mixed
 	 * @throws CManager_Scheme_Exception
 	 */
@@ -120,8 +130,6 @@ abstract class CManager_Scheme_Abstract  {
 				$value = (bool) $value;
 				break;
 			case $namespace == 'string':
-				var_dump($annotation->getAnnotations());
-				var_dump($value);
 				$value = (string) $value;
 				break;
 			case class_exists($namespace):

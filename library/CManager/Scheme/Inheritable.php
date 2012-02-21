@@ -10,6 +10,7 @@ abstract class CManager_Scheme_Inheritable extends CManager_Scheme_Abstract  {
 				if ($annotation->hasAnnotation('multiple')) {
 					$this->inheritMultiple($property, $annotation);
 				} else {
+					var_dump(array($property, $annotation->getAnnotations()));
 //					$this->inheritSingle($property, $annotation);
 				}
 			}
@@ -17,39 +18,49 @@ abstract class CManager_Scheme_Inheritable extends CManager_Scheme_Abstract  {
 	}
 
 	/**
-	 * @param string $property
+	 * @param string $propertyName
 	 * @param CManager_Annotation_Property $annotation
 	 * @return void
 	 * @throws CManager_Structure_Exception
 	 */
-	protected function inheritMultiple($property, CManager_Annotation_Property $annotation) {
+	protected function inheritMultiple($propertyName, CManager_Annotation_Property $annotation) {
 		// настройки для поля:
 		// * по какому атрибуту наследовать,
 		// * по какому атрибуту исключать наследование родительских элементов,
 		//   т.е. считать что в текущем элементе значение заменяет родительское если этот атрибут совпадает
 		$passBy		= $annotation->getAnnotation('passBy', 'pass');
-		$identifyBy	= $annotation->getAnnotation('identifyBy');
+		$identifyBy = $annotation->getAnnotation('identifyBy');
+		$exclusionBy= $annotation->getAnnotation('exclusionBy');
 
 		// получаем список значений аттрибута, по которому определяется уникальность
-		$identifyExists	= array();
+		$identifies = array();
 		if ($identifyBy !== null) {
-			foreach($this->$property as $item) {
-				$identify = $item->$identifyBy;
-				if ($identify !== null && !in_array($identify, $identifyExists)) {
-					$identifyExists[] = $identify;
+			foreach($this->{$propertyName} as $property) {
+				// если итем не является наследником CManager_Scheme_Abstract
+				// или у него отсутсвует св-во для идентификации, то пропускаем этот пункт
+				if (!$property instanceof CManager_Scheme_Abstract || !property_exists($property, $identifyBy)) {
+					break;
+				}
+				if ($property->{$identifyBy} !== null && !in_array($property->{$identifyBy}, $identifies )) {
+					$identifies[] = $property->{$identifyBy};
 				}
 			}
 		}
 
 		// получаем список исключенных элементов (если указан $config['exclusion'])
-		$namesExclusion = array();
-		if ($annotation['exclusion']) {
-			$exclusions = $this->{$annotation['exclusion']};
-			if ($exclusions && is_array($exclusions)) {
-				foreach($exclusions as $exclusion) {
-					$identify = $exclusion->name;
-					if ($identify !== null && !in_array($identify, $namesExclusion)) {
-						$namesExclusion[] = $identify;
+		$exclusions = array();
+		if ($exclusionBy !== null) {
+			$exclusionProperties = $this->{$exclusionBy};
+			if ($exclusionProperties && is_array($exclusionProperties)) {
+				foreach($exclusionProperties as $exclusionProperty) {
+					// если итем не является наследником CManager_Scheme_Abstract
+					// или у него отсутсвует св-во для идентификации, то пропускаем этот пункт
+					if (!$exclusionProperty instanceof CManager_Scheme_Abstract || !property_exists($exclusionProperty, $identifyBy)) {
+						break;
+					}
+
+					if ($exclusionProperty->{$identifyBy} !== null && !in_array($exclusionProperty->{$identifyBy}, $exclusions)) {
+						$exclusions[] = $exclusionProperty->{$identifyBy};
 					}
 				}
 			}
@@ -58,32 +69,39 @@ abstract class CManager_Scheme_Inheritable extends CManager_Scheme_Abstract  {
 		// собираем элементы с родителей
 		$parent = $this;
 		while ($parent = $parent->getParent()) {
-			$elements = $parent->$property;
-			if ($elements !== null) {
-				if (!is_array($elements)) {
-					$elements = array($elements);
+			// если у родителя нет такого св-ва, то пропускаем его
+			if (!property_exists($parent, $propertyName)) {
+				continue;
+			}
+
+			if (($properties = $parent->$propertyName) !== null) {
+				if (!is_array($properties)) {
+					$properties = array($properties);
 				}
 
-				$namesExistsCurrent = array();
-				foreach($elements as $item) {
-					if ($item->{self::PASS_ATTRIBUTE} === null) {
+				foreach($properties as $propertyItem) {
+					// если св-ва, по которому наследуется или св-во по которому идентифицируется элемент
+					// не определено или не установлено, то пропускаем
+					if (!property_exists($propertyItem, $passBy) || !$propertyItem->{$passBy}) {
 						continue;
 					}
-					$identify = $item->name;
-					if ($identify !== null && !in_array($identify, $identifyExists)) {
-						$namesExistsCurrent[] = $identify;
-						if (in_array($identify, $namesExclusion)) {
-							continue;
+
+					if ($identifyBy === null) {
+						$this->{$propertyName}[] = $propertyItem;
+					} else if (property_exists($propertyItem, $identifyBy)) {
+						if ($propertyItem->{$identifyBy} !== null) {
+							// если такой элемент уже наследовался или элемент с такой же идентификацией
+							// исключен из наследования, то пропускаем
+							if (in_array($propertyItem->{$identifyBy}, $identifies) || in_array($propertyItem->{$identifyBy}, $exclusions)) {
+								continue;
+							}
+							$identifies[] = $propertyItem->{$identifyBy};
 						}
-						$elementsCurrent[] = $item;
-					} else if ($identify === null) {
-						$elementsCurrent[] = $item;
+						$this->{$propertyName}[] = $propertyItem;
 					}
 				}
-				$identifyExists = array_merge($identifyExists, $namesExistsCurrent);
 			}
 		}
-		$this->_set($property, $elementsCurrent);
 	}
 
 }
