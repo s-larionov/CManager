@@ -9,41 +9,44 @@
  * @property string|null $namespace
  */
 class CManager_Controller_Router_Config_RouteVar extends CManager_Controller_Router_Config_Abstract {
-	protected $_name = 'var';
+	/**
+	 * @var string
+	 * @required
+	 */
+	public $name;
 
-	protected $_attributes = array(
-		'name' => array(
-			'namespace' => 'string',
-			'required' => true
-		),
-		'rule' => array(
-			'namespace' => 'string',
-			'required' => true
-		),
-		'explode' => array(
-			'namespace' => 'string',
-			'required' => false
-		),
-		'default' => array(
-			'namespace' => 'string',
-			'required' => false
-		),
-		'pattern' => array(
-			'namespace' => 'string',
-			'required' => false
-		),
-		'namespace' => array(
-			'namespace' => 'string',
-			'required' => false
-		)
-	);
+	/**
+	 * @var string
+	 * @required
+	 */
+	public $rule;
 
-	protected function _set($field, $value) {
-		if ($field == 'default' && is_string($value) && defined($value)) {
-			$value = constant($value);
+	/**
+	 * @var string
+	 */
+	public $explode;
+
+	/**
+	 * @var string
+	 */
+	public $default;
+
+	/**
+	 * @var string
+	 */
+	public $pattern;
+
+	/**
+	 * @var string
+	 */
+	public $namespace;
+
+	public function parse() {
+		parent::parse();
+
+		// реализовываем возможность подставлять константы для дефолтного значения
+		if ($this->default && is_string($this->default) && defined($this->default)) {
+			$this->default = constant($this->default);
 		}
-		parent::_set($field, $value);
 	}
-
-
 }

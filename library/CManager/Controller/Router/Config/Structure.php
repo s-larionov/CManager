@@ -1,42 +1,33 @@
 <?php
 
-/**
- * @property string $layout
- * @property string $namespace
- *
- * @property CManager_Controller_Router_Config_Permission[]	$permission
- * @property CManager_Controller_Router_Config_Tag[]		$tag
- * @property CManager_Controller_Router_Config_Page[]		$page
- */
 class CManager_Controller_Router_Config_Structure extends CManager_Controller_Router_Config_Abstract {
-	protected $_name = 'router';
-	protected $_attributes = array(
-		'layout' => array(
-			'namespace' => 'string',
-			'required' => true
-		),
-		'namespace' => array(
-			'namespace' => 'string',
-			'required' => false,
-			'inherit' => true
-		),
-	);
+	/**
+	 * @var string
+	 * @required
+	 */
+	public $layout;
 
-	protected $_children = array(
-		'permission' => array(
-			'namespace' => 'CManager_Controller_Router_Config_Permission',
-			'required' => false,
-			'single' => false
-		),
-		'tag' => array(
-			'namespace' => 'CManager_Controller_Router_Config_Tag',
-			'required' => false,
-			'single' => false
-		),
-		'page' => array(
-			'namespace' => 'CManager_Controller_Router_Config_Page',
-			'required' => true,
-			'single' => false
-		)
-	);
+	/**
+	 * @var string
+	 */
+	public $namespace;
+
+	/**
+	 * @var CManager_Controller_Router_Config_Permission[]
+	 * @multiple
+	 */
+	public $permission;
+
+	/**
+	 * @var CManager_Controller_Router_Config_Tag[]
+	 * @multiple
+	 */
+	public $tag;
+
+	/**
+	 * @var CManager_Controller_Router_Config_Page[]
+	 * @required
+	 * @multiple
+	 */
+	public $page;
 }

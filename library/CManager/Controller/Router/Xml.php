@@ -34,7 +34,7 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 		}
 
 		CManager_Timer::start('generate structure');
-		
+
 		set_error_handler(array($this, 'loadFileErrorHandler')); // Warnings and errors are suppressed
 		$xml = simplexml_load_file($this->_xmlFile);
 		restore_error_handler();
@@ -44,7 +44,7 @@ class CManager_Controller_Router_Xml extends CManager_Controller_Router_Abstract
 			throw new CManager_Controller_Router_Xml_Exception($this->_loadFileErrorStr);
 		}
 
-		return new CManager_Controller_Router_Config_Structure(new CManager_Structure_Adapter_Xml($xml));
+		return new CManager_Controller_Router_Config_Structure(new CManager_Scheme_Adapter_Xml($xml));
 	}
 
 	/**

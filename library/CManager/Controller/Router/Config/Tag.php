@@ -9,31 +9,30 @@
  * @property CManager_Controller_Router_Config_TagParam[]	$param
  */
 class CManager_Controller_Router_Config_Tag extends CManager_Controller_Router_Config_Abstract {
-	protected $_name = 'tag';
-	protected $_attributes = array(
-		'name' => array(
-			'namespace' => 'string',
-			'required' => false
-		),
-		'pass' => array(
-			'namespace' => 'enum(pass)',
-			'required' => false
-		),
-		'namespace' => array(
-			'namespace' => 'string',
-			'required' => true
-		),
-		'mode' => array(
-			'namespace' => 'enum(normal,background)',
-			'required' => false,
-			'default' => 'normal'
-		)
-	);
-	protected $_children = array(
-		'param' => array(
-			'namespace' => 'CManager_Controller_Router_Config_TagParam',
-			'required' => false,
-			'single' => false
-		)
-	);
+	/**
+	 * @var string
+	 */
+	public $name;
+
+	/**
+	 * @var boolean
+	 */
+	public $pass;
+
+	/**
+	 * @var string
+	 * @required
+	 */
+	public $namespace;
+
+	/**
+	 * @var enum(normal,background)
+	 */
+	public $mode = 'normal';
+
+	/**
+	 * @var CManager_Controller_Router_Config_TagParam[]
+	 * @multiple
+	 */
+	public $param;
 }

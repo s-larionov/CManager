@@ -46,9 +46,9 @@ abstract class CManager_Scheme_Abstract  {
 				foreach($value as $item) {
 					$values[] = $this->createValue($item, $annotation);
 				}
-				$this->$property = $values;
+				$this->{$property} = $values;
 			} else {
-				$this->$property = $this->createValue($value, $annotation);
+				$this->{$property} = $this->createValue($value, $annotation);
 			}
 		}
 	}
@@ -127,7 +127,7 @@ abstract class CManager_Scheme_Abstract  {
 				break;
 			case $namespace == 'bool':
 			case $namespace == 'boolean':
-				$value = (bool) $value;
+				$value = ($value == $annotation->getReflection()->getName()) || (bool) $value;
 				break;
 			case $namespace == 'string':
 				$value = (string) $value;
