@@ -67,6 +67,8 @@ class CManager_Controller_Router_Config_Page extends CManager_Controller_Router_
 	 * @passBy pass
 	 * @identifyBy name
 	 * @exclusionBy tag_exclusion
+	 *
+	 * @todo @depends tag_exclusion
 	 */
 	public $tag = array();
 

@@ -9,7 +9,7 @@ abstract class CManager_Scheme_Abstract  {
 	/**
 	 * @var CManager_Annotation_Object
 	 */
-	protected $annotation;
+	protected $annotation = null;
 
 	/**
 	 * @var CManager_Scheme_Abstract|null
@@ -21,11 +21,10 @@ abstract class CManager_Scheme_Abstract  {
 		if ($parent !== null) {
 			$this->setParent($parent);
 		}
-		$this->annotation = new CManager_Annotation_Object($this);
 		$this->parse();
 	}
 
-	public function parse() {
+	protected function parse() {
 		foreach($this->getAnnotation()->getPropertiesAnnotations() as $property => $annotation) {
 			$value	= $this->getAdapter()->get($property);
 
@@ -72,7 +71,7 @@ abstract class CManager_Scheme_Abstract  {
 	/**
 	 * @return CManager_Scheme_Adapter_Abstract
 	 */
-	public function getAdapter() {
+	protected function getAdapter() {
 		return $this->adapter;
 	}
 
@@ -89,6 +88,9 @@ abstract class CManager_Scheme_Abstract  {
 	 * @return CManager_Annotation_Object
 	 */
 	public function getAnnotation() {
+		if ($this->annotation === null) {
+			$this->annotation = new CManager_Annotation_Object($this);
+		}
 		return $this->annotation;
 	}
 
@@ -142,5 +144,35 @@ abstract class CManager_Scheme_Abstract  {
 				throw new CManager_Structure_Exception("Namespace {$namespace} not defined");
 		}
 		return $value;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function __sleep() {
+		$properties = array();
+		foreach($this->getAnnotation()->getReflection()->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+			$properties[] = $property->getName();
+		}
+		return $properties;
+	}
+
+	/**
+	 * @return void
+	 */
+	public function __wakeup() {
+		foreach($this->__sleep() as $property) {
+			if (is_array($this->{$property})) {
+				foreach($this->{$property} as /** @var CManager_Scheme_Abstract $propertyItem */ &$propertyItem) {
+					if ($propertyItem instanceof CManager_Scheme_Abstract) {
+						$propertyItem->setParent($this);
+					}
+				}
+				continue;
+			}
+			if ($this->{$property} instanceof CManager_Scheme_Abstract) {
+				$this->{$property}->setParent($this);
+			}
+		}
 	}
 }
