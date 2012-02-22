@@ -103,7 +103,9 @@ abstract class CManager_Scheme_Abstract {
 	protected function createValue($value = null, CManager_Annotation_Property $annotation) {
 		if ($value === null) {
 			$value = $annotation->getDefaultValue();
-			if ($value === null) {
+			if ($annotation->hasAnnotation('multiple') && !is_array($value)) {
+				return array();
+			} else if ($value === null) {
 				return null;
 			}
 		}
@@ -117,7 +119,7 @@ abstract class CManager_Scheme_Abstract {
 				$enumValues	= explode(',', substr($namespace, 5, -1));
 				$value		= (string) $value;
 				if (!in_array($value, $enumValues)) {
-					throw new CManager_Structure_Exception("Value '{$value}' not in {$namespace}");
+					throw new CManager_Scheme_Exception("Value '{$value}' not in {$namespace}");
 				}
 				break;
 			case $namespace == 'int':
@@ -129,7 +131,8 @@ abstract class CManager_Scheme_Abstract {
 				break;
 			case $namespace == 'bool':
 			case $namespace == 'boolean':
-				$value = ($value == $annotation->getReflection()->getName()) || (bool) $value;
+				$value = mb_strtolower($value);
+				$value = ($value === 'false' || $value === 'no')? false: (bool) $value;
 				break;
 			case $namespace == 'string':
 				$value = (string) $value;
@@ -141,7 +144,7 @@ abstract class CManager_Scheme_Abstract {
 				$value = CManager_Helper_Object::newInstance($namespace, __CLASS__, array($value, $this));
 				break;
 			default:
-				throw new CManager_Structure_Exception("Namespace {$namespace} not defined");
+				throw new CManager_Scheme_Exception("Namespace {$namespace} not defined");
 		}
 		return $value;
 	}

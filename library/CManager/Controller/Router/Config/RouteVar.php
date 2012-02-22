@@ -8,10 +8,14 @@ class CManager_Controller_Router_Config_RouteVar extends CManager_Controller_Rou
 	public $name;
 
 	/**
-	 * @var string
-	 * @required
+	 * @var boolean
 	 */
-	public $rule;
+	public $pass = false;
+
+	/**
+	 * @var string
+	 */
+	public $rule = '.*';
 
 	/**
 	 * @var string

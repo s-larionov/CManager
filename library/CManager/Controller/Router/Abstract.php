@@ -6,31 +6,31 @@
  */
 
 abstract class CManager_Controller_Router_Abstract extends CManager_Controller_Abstract {
-	
+
 	const DEFAULT_CLASS_PAGE = 'CManager_Controller_Page';
-	
+
 	/*
 	 * запрашиваемая страница
 	 * @var CManager_Controller_Page
 	 */
-	private $_page;
+	private $page;
 
 	/**
 	 * @var CManager_Controller_Route[]
 	 */
-	protected $_routes = null;
+	protected $routes = null;
 
 	/**
 	 * Объект-парсер структуры. С его помошью ищем нужную страницу. Реализация паттерна Strategy.
 	 *
 	 * @var CManager_Controller_PageResolver
 	 */
-	protected $_pageResolver = null;
+	protected $pageResolver = null;
 
 	/**
-	 * @var CManager_Controller_Router_Config_Structure
+	 * @var CManager_Controller_Router_Config_Routes
 	 */
-	protected $_structure = null;
+	protected $structure = null;
 
 	/**
 	 * @return void
@@ -48,14 +48,14 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 * @return CManager_Controller_Page
 	 */
 	final public function getPage() {
-		if ($this->_page === null) {
+		if ($this->page === null) {
 			try {
 				$this->setPage($this->getPageResolver()->getPage());
 			} catch (CManager_Controller_Page_404Exception $e) {
 				$this->setPage($this->createPageByCode(404));
 			}
 		}
-		return $this->_page;
+		return $this->page;
 	}
 
 	/**
@@ -66,7 +66,8 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 * @throws CManager_Controller_Route_Exception
 	 */
 	public function generateUrl($pageName, array $variables = array(), $addQueryParams = true) {
-		if (!isset($this->_routes[$pageName])) {
+		// если искомого роута не существует, то возвращаем ссылку-заглушку в виде хеша (#pagename?p1=1&amp;p2=2)
+		if (!isset($this->routes[$pageName])) {
 			$url = '#' . $pageName;
 			foreach($variables as $name => &$value) {
 				$value = urlencode($name) . ($value !== ''? '=' . urlencode($value): '');
@@ -76,32 +77,32 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 			}
 			return $url;
 		}
-		return $this->_routes[$pageName]->generateUrl($variables, $addQueryParams);
+		return $this->routes[$pageName]->generateUrl($variables, $addQueryParams);
 	}
 
 	/*
 	 * Возвращает полный конфиг (массив)
 	 *
-	 * @return CManager_Controller_Router_Config_Abstract
+	 * @return CManager_Controller_Router_Config_Routes
 	 */
 	abstract protected function _getStructure();
 
 	/**
-	 * @return CManager_Controller_Router_Config_Structure
+	 * @return CManager_Controller_Router_Config_Routes
 	 */
 	final public function getStructure() {
-		if ($this->_structure === null) {
-			$this->_structure = $this->_getStructure();
+		if ($this->structure === null) {
+			$this->structure = $this->_getStructure();
 		}
-		return $this->_structure;
+		return $this->structure;
 	}
 
 	/**
-	 * @param CManager_Controller_Router_Config_Structure $structure
+	 * @param CManager_Controller_Router_Config_Routes $structure
 	 * @return CManager_Controller_Router_Abstract
 	 */
-	final public function setStructure(CManager_Controller_Router_Config_Structure $structure) {
-		$this->_structure = $structure;
+	final public function setStructure(CManager_Controller_Router_Config_Routes $structure) {
+		$this->structure = $structure;
 		return $this;
 	}
 
@@ -109,15 +110,15 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 * @param CManager_Controller_Page $page
 	 */
 	final public function setPage(CManager_Controller_Page $page) {
-		$this->_page = $page;
-		$this->_page->init();
+		$page->init();
+		$this->page = $page;
 	}
 
 	/**
 	 * @return array
 	 */
 	final public function __sleep() {
-		return array('_routes', '_structure');
+		return array('routes', 'structure');
 	}
 
 	/**
@@ -167,54 +168,50 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 * @return CManager_Controller_Route[]|CManager_Controller_Route
 	 */
 	public function getRoutes($name = null) {
-		if ($this->_routes === null) {
-			$structure = $this->getStructure();
-			if (!$structure->page || !is_array($structure->page)) {
-				throw new CManager_Controller_Router_Exception("Wrong router config data");
-			}
-			$this->_routes = $this->_generateRoutes($structure->page);
+		if ($this->routes === null) {
+			$this->routes = $this->generateRoutes($this->getStructure()->route);
 		}
 		if ($name !== null) {
-			if (array_key_exists($name, $this->_routes)) {
-				return $this->_routes[$name];
+			if (array_key_exists($name, $this->routes)) {
+				return $this->routes[$name];
 			}
 			return null;
 		}
-		return $this->_routes;
+		return $this->routes;
 	}
 
 	/**
-	 * @param CManager_Controller_Router_Config_Page[] $pages
+	 * @param CManager_Controller_Router_Config_Route[] $routesConfig
 	 * @param CManager_Controller_Route $parentRoute
 	 * @return array
 	 */
-	protected function _generateRoutes(array $pages, CManager_Controller_Route $parentRoute = null) {
-		$routes = array();
-		foreach($pages as $page) {
-			if (array_key_exists($page->name, $routes)) {
-				throw new CManager_Controller_Router_Exception("Page '{$page->name}' already exists in router");
+	protected function generateRoutes(array $routesConfig, CManager_Controller_Route $parentRoute = null) {
+		$routes = /** @var CManager_Controller_Route[] $routesConfig */array();
+		foreach($routesConfig as $route) {
+			if (array_key_exists($route->name, $routesConfig)) {
+				throw new CManager_Controller_Router_Exception("Route '{$route->name}' already exists in router");
 			}
-			$routes[$page->name] = $this->_createRoute($page, $parentRoute);
-			if (is_array($page->page)) {
-				$routes = array_merge($routes, $this->_generateRoutes($page->page, $routes[$page->name]));
+			$routes[$route->name] = $this->createRoute($route, $parentRoute);
+
+			if (is_array($route->route)) {
+				$routes = array_merge($routes, $this->generateRoutes($route->route, $routes[$route->name]));
 			}
 		}
 
-		return $routes;
+		return $routesConfig;
 	}
 
 	/**
-	 * @param CManager_Controller_Router_Config_Page $page
+	 * @param CManager_Controller_Router_Config_Route $route
 	 * @param CManager_Controller_Route $parentRoute
 	 * @return CManager_Controller_Route
 	 */
-	protected function _createRoute(CManager_Controller_Router_Config_Page $page, CManager_Controller_Route $parentRoute = null) {
-		$route = new CManager_Controller_Route($page->route->url, $page->route->var);
+	protected function createRoute(CManager_Controller_Router_Config_Route $route, CManager_Controller_Route $parentRoute = null) {
+		$route = new CManager_Controller_Route($route->url, $route->var);
 		if ($parentRoute !== null) {
 			$route->setParent($parentRoute);
 		}
 
-		$route->setPageConfig($page);
 		$route->setRouter($this);
 
 		return $route;
@@ -225,17 +222,17 @@ abstract class CManager_Controller_Router_Abstract extends CManager_Controller_A
 	 * @return void
 	 */
 	public function setPageResolver(CManager_Controller_PageResolver $pageResolver) {
-		$this->_pageResolver = $pageResolver;
-		$this->_pageResolver->setRouter($this);
+		$this->pageResolver = $pageResolver;
+		$this->pageResolver->setRouter($this);
 	}
 
 	/**
 	 * @return CManager_Controller_PageResolver
 	 */
 	public function getPageResolver() {
-		if ($this->_pageResolver === null) {
+		if ($this->pageResolver === null) {
 			$this->setPageResolver(new CManager_Controller_PageResolver());
 		}
-		return $this->_pageResolver;
+		return $this->pageResolver;
 	}
 }
