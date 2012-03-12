@@ -57,7 +57,8 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 	 * @return Mods_Navigation_Item
 	 */
 	public static function getNavigation($name, CManager_Controller_Router_Config_Page $fromPage = null) {
-		$key = $fromPage !== null? "{$fromPage->name}-{$name}": $name;
+//		$key = $fromPage !== null? "{$fromPage->name}-{$name}": $name;
+		$key = $name;
 
 		if ($fromPage === null && static::$_navigations === null) {
 			static::_createNavigations();
@@ -85,7 +86,9 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 			$structure = $router->getStructure();
 		}
 
-		static::$_navigations = array();
+		if (!is_array(static::$_navigations)) {
+			static::$_navigations = array();
+		}
 		foreach($structure->page as $page) {
 			try {
 				$url = $router->generateUrl($page->name);
