@@ -85,15 +85,16 @@ class CManager_File_Image extends CManager_File {
 	 */
 	public function getContent() {
 		switch ($this->getImageType()) {
-			case IMAGETYPE_JPEG:
-			case IMAGETYPE_JPEG2000:
-				return $this->toJpeg();
 			case IMAGETYPE_PNG:
 				return $this->toPng();
 			case IMAGETYPE_GIF:
 				return $this->toGif();
+			case IMAGETYPE_JPEG:
+			case IMAGETYPE_JPEG2000:
+			default:
+				return $this->toJpeg();
 		}
-		throw new CManager_File_Image_Exception('Unsupported image type');
+//		throw new CManager_File_Image_Exception('Unsupported image type');
 	}
 
 	/**
@@ -167,20 +168,23 @@ class CManager_File_Image extends CManager_File {
 	/**
 	 * Resize image
 	 *
-	 * @param int|null	$width				Width of new image in pixels
-	 * @param int|null	$height				Height of new image in pixels
-	 * @param int		$method				Method of resize image. @
-	 * @param int		$fields				self::RESIZE_WITHOUT_FIELDS or self::RESIZE_WITH_FIELDS
-	 * @param float		$horizontalAlign	Horizontal position result image in original image (from 0 to 1)
-	 * @param float		$verticalAlign		Vertical position result image in original image (from 0 to 1)
-	 * @param string	$backgroundColor	Color in HEX format (XXXXXX, ex. FF0000 for red color).
+	 * @param int|null $width Width of new image in pixels
+	 * @param int|null $height Height of new image in pixels
+	 * @param int $method Method of resize image. @
+	 * @param int $fields self::RESIZE_WITHOUT_FIELDS or self::RESIZE_WITH_FIELDS
+	 * @param float $horizontalAlign Horizontal position result image in original image (from 0 to 1)
+	 * @param float $verticalAlign Vertical position result image in original image (from 0 to 1)
+	 * @param string $backgroundColor Color in HEX format (XXXXXX, ex. FF0000 for red color).
+	 * @param bool $withoutLossOfQuality If result size great than source, then if true - don't resize
 	 *
-	 * @return CManager_File_Image
+	 * @throws CManager_File_Image_Exception
+	 * @return \CManager_File_Image
 	 */
 	public function resize($width = null, $height = null,
 						   $method = self::RESIZE_METHOD_FILL, $fields = self::RESIZE_WITHOUT_FIELDS,
 						   $horizontalAlign = 0.5, $verticalAlign = 0.5,
-						   $backgroundColor = self::DEFAULT_BACKGROUND_COLOR) {
+						   $backgroundColor = self::DEFAULT_BACKGROUND_COLOR,
+						   $withoutLossOfQuality = true) {
 		$sourceImage = $this->getHandle();
 
 		$sourceWidth  = imagesx($sourceImage);
@@ -207,6 +211,12 @@ class CManager_File_Image extends CManager_File {
 		// проверяем что размеры выходного изображения не отрицательные
 		if ($width <= 0 || $height <= 0) {
 			throw new CManager_File_Image_Exception('Result image size is zero or negative');
+		}
+
+		// если новое изображение больше чем оригинал и указан
+		// параметр $withoutLossOfQuality = true, прекращаем обработку
+		if ($withoutLossOfQuality && $width > $sourceWidth && $height > $sourceHeight) {
+			return $this;
 		}
 
 		// horizontalAlign и verticalAlign должны быть в пределах от 0 до 1
@@ -325,6 +335,14 @@ class CManager_File_Image extends CManager_File {
 
 		$this->resize(imagesx($imageHandle) * $scale, imagesy($imageHandle) * $scale, self::RESIZE_METHOD_CROP);
 	}
+
+	public function setContent($content, $autoSave = true) {
+		$result = parent::setContent($content, $autoSave);
+		$this->_imageHandle = imagecreatefromstring($content);
+
+		return $result;
+	}
+
 
 	/**
 	 * Get handle for image
