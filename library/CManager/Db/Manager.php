@@ -28,12 +28,12 @@ class CManager_Db_Manager {
 	/**
 	 * @static
 	 * @param string $mode
-	 * @return Zend_Config
 	 * @throws CManager_Db_Manager_Exception
+	 * @return Zend_Config
 	 */
 	protected static function _getConfig($mode = self::CONFIG_PARAM_CONNECTIONS) {
 		if (self::$_config === null) {
-			self::$_config = CManager_Registry::getConfig()->get('db_manager');
+			self::$_config = CManager_Registry::getConfig()->get('database_manager');
 
 			if (!self::$_config instanceof Zend_Config) {
 				throw new CManager_Db_Manager_Exception('Db manager is not configured.');
@@ -48,8 +48,8 @@ class CManager_Db_Manager {
 	/**
 	 * @static
 	 * @param string $connectionAlias
+	 * @throws CManager_Cache_Manager_Exception
 	 * @return Zend_Config
-	 * @throws CManager_Db_Manager_Exception
 	 */
 	protected static function _getAliasConfig($connectionAlias = self::ALIAS_DEFAULT) {
 		$config = /** @var Zend_Config $config */ self::_getConfig('connections')->get($connectionAlias);
@@ -61,6 +61,7 @@ class CManager_Db_Manager {
 
 	/**
 	 * @param string $alias
+	 * @throws CManager_Db_Manager_Exception
 	 * @return CManager_Db_Adapter_Abstract
 	 */
 	public static function getConnectionByAlias($alias) {

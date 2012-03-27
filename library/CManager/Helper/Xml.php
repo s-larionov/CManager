@@ -62,9 +62,9 @@ class CManager_Helper_Xml {
 
 		$xml = '';
 
-		if ($config['keysAsElements'] === null && !CManager_Helper_Array::isNumberedArray($array)) {
+		if ($config['keysAsElements'] === null && !CManager_Helper_Array::isSimpleArray($array)) {
 			$config['keysAsElements'] = true;
-		} else if ($config['keysAsElements'] && CManager_Helper_Array::isNumberedArray($array)) {
+		} else if ($config['keysAsElements'] && CManager_Helper_Array::isSimpleArray($array)) {
 			throw new CManager_Exception("Can't generate xml with named items for numbered array");
 		}
 

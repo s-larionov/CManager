@@ -128,8 +128,8 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 */
 	final public function addSessionTag(CManager_Controller_Tag $tag, $path = null) {
 		$key = 'tag_'. $tag->name;
-		$this->_sessionTagsStorage($path)->{$key} = $tag->toArray();
-		$this->_sessionTagsStorage($path)->setExpirationHops(1, $key);
+		$this->_sessionTagsStorage()->{$key} = $tag->toArray();
+		$this->_sessionTagsStorage()->setExpirationHops(1, $key);
 		return $this;
 	}
 
@@ -138,10 +138,6 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @return Zend_Session_Namespace
 	 */
 	final private function _sessionTagsStorage($path = null) {
-		if (!$path) {
-			$path = $this->getRequest()->getPath();
-		}
-
 		if (!isset($this->_sessionTagsStorage[$path])) {
 			$key = 'CManager_Controller_Page_'. $path;
 			$this->_sessionTagsStorage[$path] = new Zend_Session_Namespace($key);

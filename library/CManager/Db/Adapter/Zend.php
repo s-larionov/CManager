@@ -9,7 +9,7 @@ class CManager_Db_Adapter_Zend extends CManager_Db_Adapter_Abstract {
 	/**
 	 * @var Zend_Db_Adapter_Abstract
 	 */
-	protected $_adapter = null;
+	protected $adapter = null;
 
 	/**
 	 * @param Zend_Config $config
@@ -22,10 +22,10 @@ class CManager_Db_Adapter_Zend extends CManager_Db_Adapter_Abstract {
 	 * @return Zend_Db_Adapter_Abstract
 	 */
 	public function getAdapter() {
-		if ($this->_adapter === null) {
-			$this->_adapter = Zend_Db::factory($this->getConfig()->get('driver'), $this->getConfig());
+		if ($this->adapter === null) {
+			$this->adapter = Zend_Db::factory($this->getConfig()->get('driver'), $this->getConfig());
 		}
-		return $this->_adapter;
+		return $this->adapter;
 	}
 
 	/**

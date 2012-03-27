@@ -29,6 +29,15 @@ class CManager_File implements CManager_File_Interface {
 	}
 
 	/**
+	 * @static
+	 * @param string $filename
+	 * @return CManager_File
+	 */
+	public static function newInstance($filename) {
+		return new self($filename);
+	}
+
+	/**
 	 * @return false|string
 	 */
 	public function getContent() {

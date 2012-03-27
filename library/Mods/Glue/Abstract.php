@@ -30,8 +30,8 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Cache {
 	}
 
 	/**
-	 * @return void
 	 * @throws Mods_Glue_Exception
+	 * @return string|void
 	 */
 	public function run() {
 		$this->tryLoadFromCache();
@@ -42,7 +42,7 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Cache {
 		if ($items === null) {
 			throw new Mods_Glue_Exception("Items is empty");
 		}
-		if (!is_array($items) || !CManager_Helper_Array::isNumberedArray($items)) {
+		if (!is_array($items) || !CManager_Helper_Array::isSimpleArray($items)) {
 			$items = array($items);
 		}
 		foreach($items as $item) {
@@ -57,7 +57,8 @@ abstract class Mods_Glue_Abstract extends CManager_Controller_Action_Cache {
 	}
 
 	/**
-	 * @return Mods_Glue_Storage_Interface
+	 * @throws Mods_Glue_Exception
+	 * @return \Mods_Glue_Storage_Interface
 	 */
 	protected function _createStorage() {
 		$config = /** @var Zend_Config $config */ $this->getConfig()->get('storage');
