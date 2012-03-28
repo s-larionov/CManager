@@ -62,10 +62,11 @@ class CManager_Helper_Xml {
 
 		$xml = '';
 
-		if ($config['keysAsElements'] === null && !CManager_Helper_Array::isSimpleArray($array)) {
+
+		if (CManager_Helper_Array::hasNumberOrEmptyKeys($array)) {
+			$config['keysAsElements'] = false;
+		} else if ($config['keysAsElements'] !== false) {
 			$config['keysAsElements'] = true;
-		} else if ($config['keysAsElements'] && CManager_Helper_Array::isSimpleArray($array)) {
-			throw new CManager_Exception("Can't generate xml with named items for numbered array");
 		}
 
 		foreach($array as $key => &$row) {

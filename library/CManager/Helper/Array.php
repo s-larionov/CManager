@@ -8,17 +8,22 @@ class CManager_Helper_Array {
 	 * @return bool true - не ассоциативный массив, false - ассоциативный
 	 */
 	public static function isSimpleArray(array $array) {
-		$keys = array_keys($array);
-		foreach ($keys as $key) {
-			if (!is_int($key)) {
-				return false;
+		return (range(0, count($array) - 1) === array_keys($array));
+	}
+
+	/**
+	 * Проверяет являются ли ключи массива только строковыми.
+	 *
+	 * @param array $array
+	 * @return bool true - ассоциативный массив, false - не ассоциативный
+	 */
+	public static function hasNumberOrEmptyKeys(array $array) {
+		foreach(array_keys($array) as $key) {
+			if (is_numeric($key) || empty($key)) {
+				return true;
 			}
 		}
-		// если в массиве индексы идут не по порядку, то массив уже не является простым массивом
-		if (count($keys) !== (end($keys) + 1)) {
-			return false;
-		}
-		return true;
+		return false;
 	}
 
 	/**

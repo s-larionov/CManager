@@ -87,7 +87,7 @@ class CManager_Helper_String {
 				while (($symb = mb_substr($text, $i, 1)) && !in_array($symb, $spaceSymbols) && $i < $len) {
 					$i++;
 				}
-				$text = mb_substr($text, 0, $i) . ($i < $len? $cutText: '');
+				$text = trim(mb_substr($text, 0, $i)) . ($i < $len? $cutText: '');
 			}
 		}
 		return $text;
