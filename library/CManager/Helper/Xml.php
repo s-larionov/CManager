@@ -74,7 +74,7 @@ class CManager_Helper_Xml {
 			if (!empty($config['elementAttributes']) && is_array($row)) {
 				foreach($config['elementAttributes'] as $attr) {
 					if (isset($row[$attr])) {
-						$elementAttributesValues[$attr] = $row[$attr];
+						$elementAttributesValues[$attr] = (string) $row[$attr];
 						$row[$attr] = null;
 						unset($row[$attr]);
 					} else {

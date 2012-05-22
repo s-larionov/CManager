@@ -436,7 +436,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @param string $mode
 	 * @return string
 	 */
-	final public function getTitle($mode = 'default') {
+	public function getTitle($mode = self::MODE_DEFAULT) {
 		if (!array_key_exists($mode, $this->_titles)) {
 			$this->setTitle($this->_getTitle($mode), $mode);
 		}
@@ -448,7 +448,7 @@ class CManager_Controller_Page extends CManager_Controller_Abstract implements C
 	 * @param string $mode
 	 * @return CManager_Controller_Page
 	 */
-	final public function setTitle($title, $mode = 'default') {
+	public function setTitle($title, $mode = self::MODE_DEFAULT) {
 		$this->_titles[$mode] = $title;
 		return $this;
 	}

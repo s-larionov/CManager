@@ -51,7 +51,7 @@ class CManager_Display {
 	 * @param string $mode
 	 * @return string
 	 */
-	public static function title($mode = CManager_Controller_Page::MODE_DEFAULT) {
+	public static function title($mode = null) {
 		return self::getApplication()->getRouter()->getPage()->getTitle($mode);
 	}
 

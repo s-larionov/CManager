@@ -33,7 +33,7 @@ class CManager_Date {
 
 		// разница дат в днях
 		$diff = (intval(time()/86400) - intval($this->_date/86400));
-		
+
 		switch(true) {
 			case $diff == 0:
 				$format = $options['DATE_TPL_TODAY'];
@@ -125,10 +125,10 @@ class CManager_Date {
 				$return = CManager_Helper_String::pluralFormParse($options['DIFF_DATE_TPL_MONTHS_AGO'], round($diff/30));
 				break;
 			default:
-				$return = strftime($options['DIFF_DATE_TPL_DEFAULT'], $date1);
+				$return = $options['DIFF_DATE_TPL_DEFAULT'];
 		}
 
-		return $return;
+		return strftime($return, $date1);
 	}
 
 	/**

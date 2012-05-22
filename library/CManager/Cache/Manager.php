@@ -61,6 +61,8 @@ class CManager_Cache_Manager {
 
 	/**
 	 * @param string $alias
+	 *
+	 * @throws CManager_Cache_Manager_Exception
 	 * @return CManager_Cache_Storage_Abstract
 	 */
 	public static function getConnectionByAlias($alias) {
@@ -101,6 +103,8 @@ class CManager_Cache_Manager {
 	 * @static
 	 * @param string      $scopeName
 	 * @param string|null $defaultScope
+	 *
+	 * @throws CManager_Cache_Manager_Exception
 	 * @return string
 	 */
 	protected static function _getConnectionAliasByScope($scopeName, $defaultScope = self::SCOPE_DEFAULT) {

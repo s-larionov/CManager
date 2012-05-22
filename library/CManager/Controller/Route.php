@@ -169,8 +169,8 @@ class CManager_Controller_Route {
 	 * Возвращает список переменных (возможен пустой массив) в случае совпадения, иначе false
 	 *
 	 * @param string $url
+	 * @throws CManager_Controller_Route_Exception
 	 * @return string[]|boolean
-	 * @throws CManager_Controller_Exception
 	 */
 	public function parse($url) {
 		$url = trim($url, '/');
@@ -223,6 +223,7 @@ class CManager_Controller_Route {
 	/**
 	 * @param string $value
 	 * @param CManager_Controller_Router_Config_RouteVar $config
+	 * @throws CManager_Controller_Route_Exception
 	 * @return mixed
 	 */
 	protected function _prepareVariable($value, CManager_Controller_Router_Config_RouteVar $config) {

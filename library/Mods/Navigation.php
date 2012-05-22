@@ -63,6 +63,9 @@ class Mods_Navigation extends CManager_Controller_Action_Cache {
 		if ($fromPage === null && static::$_navigations === null) {
 			static::_createNavigations();
 		}
+		if (!is_array(static::$_navigations)) {
+			static::$_navigations = array();
+		}
 		if ($fromPage !== null && !array_key_exists($key, static::$_navigations)) {
 			static::_createNavigations($fromPage);
 		}

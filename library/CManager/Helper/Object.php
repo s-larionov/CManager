@@ -13,7 +13,7 @@ class CManager_Helper_Object {
 		try {
 			CManager_Loader::load($className);
 		} catch (CManager_Loader_Exception $e) {
-			throw new CManager_Exception("Class {$className} not found");
+			throw new CManager_Exception($e->getMessage(), $e->getCode());
 		}
 
 		$reflection = new ReflectionClass($className);
@@ -36,9 +36,9 @@ class CManager_Helper_Object {
 	 */
 	public static function isSubclassOf($classOrObject, $parentClassOrInterface) {
 		if (is_object($classOrObject)) {
-			$reflection = new \ReflectionObject($classOrObject);
+			$reflection = new ReflectionObject($classOrObject);
 		} else {
-			$reflection = new \ReflectionClass($classOrObject);
+			$reflection = new ReflectionClass($classOrObject);
 		}
 		if ($reflection->isSubclassOf($parentClassOrInterface)) {
 			return true;

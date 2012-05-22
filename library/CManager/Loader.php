@@ -10,6 +10,8 @@
  */
 
 class CManager_Loader {
+	static private $lastError = null;
+	static private $lastErrorCode = null;
 	/**
 	 * Load class by standardized class name
 	 * @see http://framework.zend.com/manual/en/coding-standard.naming-conventions.html#coding-standard.naming-conventions.classes
@@ -30,7 +32,13 @@ class CManager_Loader {
 		set_error_handler(array(__CLASS__, 'loadFileErrorHandler')); // Warnings and errors are suppressed
 		if (!include_once($path)) {
 			restore_error_handler();
-			throw new CManager_Loader_Exception("Loading file {$path} error");
+
+			$e = new CManager_Loader_Exception(self::$lastError, self::$lastErrorCode);
+
+			self::$lastError = null;
+			self::$lastErrorCode = null;
+
+			throw $e;
 		}
 		restore_error_handler();
 
@@ -64,5 +72,8 @@ class CManager_Loader {
 	 * @param string $errfile
 	 * @param integer $errline
 	 */
-	public static function loadFileErrorHandler($errno, $errstr, $errfile, $errline) {}
+	public static function loadFileErrorHandler($errno, $errstr, $errfile, $errline) {
+		self::$lastError = $errstr;
+		self::$lastErrorCode = $errno;
+	}
 }
