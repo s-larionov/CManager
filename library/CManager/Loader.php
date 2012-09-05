@@ -31,14 +31,19 @@ class CManager_Loader {
 		// ловим Warnings на отсутствие файла, но Fatal Error будут происходить все равно
 		set_error_handler(array(__CLASS__, 'loadFileErrorHandler')); // Warnings and errors are suppressed
 		if (!include_once($path)) {
-			restore_error_handler();
+			$path = $className . DIRECTORY_SEPARATOR . $className .'.php';
 
-			$e = new CManager_Loader_Exception(self::$lastError, self::$lastErrorCode);
+			// ловим Warnings на отсутствие файла, но Fatal Error будут происходить все равно
+			if (!include_once($path)) {
+				restore_error_handler();
 
-			self::$lastError = null;
-			self::$lastErrorCode = null;
+				$e = new CManager_Loader_Exception(self::$lastError, self::$lastErrorCode);
 
-			throw $e;
+				self::$lastError = null;
+				self::$lastErrorCode = null;
+
+				throw $e;
+			}
 		}
 		restore_error_handler();
 
