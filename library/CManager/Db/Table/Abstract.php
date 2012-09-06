@@ -4,13 +4,13 @@ abstract class CManager_Db_Table_Abstract extends Zend_Db_Table_Abstract {
 	/**
 	 * @var string
 	 */
-	protected $_connectionAlias = null;
+	protected $_scopeAlias = null;
 
 	public function __construct($config = array()) {
-		if ($this->_connectionAlias) {
-			$config['db'] = CManager_Db_Manager::connection($this->_connectionAlias)->getAdapter();
+		if ($this->_scopeAlias) {
+			$config['db'] = CManager_Db_Manager::getConnectionByScope($this->_scopeAlias)->getAdapter();
 		} else if ((is_array($config) || $config instanceof ArrayAccess) && !isset($config['db'])) {
-			$config['db'] = CManager_Db_Manager::connection('default')->getAdapter();
+			$config['db'] = CManager_Db_Manager::getConnectionByScope('default')->getAdapter();
 		}
 
 		parent::__construct($config);
@@ -28,7 +28,7 @@ abstract class CManager_Db_Table_Abstract extends Zend_Db_Table_Abstract {
 	 */
 	public function switchAdapter($alias = null) {
 		$this->setOptions(array(
-			Zend_Db_Table_Abstract::ADAPTER => CManager_Db_Manager::connection($alias)->getAdapter()
+			Zend_Db_Table_Abstract::ADAPTER => CManager_Db_Manager::getConnectionByScope($alias)->getAdapter()
 		));
 	}
 
@@ -41,11 +41,11 @@ abstract class CManager_Db_Table_Abstract extends Zend_Db_Table_Abstract {
 	}
 
 	/**
-	 * @param string $alias
+	 * @param string $scope
 	 * @return mixed|Zend_Db_Adapter_Abstract
 	 */
-	public function getAdapterByAlias($alias) {
-		return CManager_Db_Manager::connection($alias)->getAdapter();
+	public function getAdapterByScope($scope) {
+		return CManager_Db_Manager::getConnectionByScope($alias)->getAdapter();
 	}
 
 	public function insert($data, $check = true) {

@@ -54,7 +54,7 @@ class CManager_Db_Manager {
 	protected static function _getAliasConfig($connectionAlias = self::ALIAS_DEFAULT) {
 		$config = /** @var Zend_Config $config */ self::_getConfig('connections')->get($connectionAlias);
 		if (!$config instanceof Zend_Config) {
-			throw new CManager_Cache_Manager_Exception("Cache connection '{$connectionAlias}' is not configured.");
+			throw new CManager_Cache_Manager_Exception("Db connection '{$connectionAlias}' is not configured.");
 		}
 		return $config;
 	}
